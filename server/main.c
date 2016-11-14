@@ -10,7 +10,8 @@
 
 int main(int argc , char *argv[])
 {
-    int socket_desc , client_sock , c , read_size;
+    int socket_desc , client_sock , c ;
+    ssize_t read_size;
     struct sockaddr_in server , client;
     char client_message[2000];
 
