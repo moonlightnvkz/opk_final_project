@@ -2,6 +2,7 @@
 // Created by moonlightnvkz on 10.11.16.
 //
 #include <stdlib.h> //abs()
+#include <math.h>
 #include "geometry.h"
 
 bool Rect_is_intersects(IntRect rect1, IntRect rect2)

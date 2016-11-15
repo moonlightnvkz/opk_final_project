@@ -2,8 +2,9 @@
 // Created by moonlightnvkz on 14.11.16.
 //
 
+#include <SDL_image.h>
 #include "cleaner.h"
-#include <SDL2/SDL_image.h>
+#include "loggers.h"
 
 void cleanup(SDL_Window *window, SDL_Renderer *renderer, bool sdl_quit, bool img_quit)
 {
@@ -19,5 +20,7 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer, bool sdl_quit, bool img
     if (img_quit) {
         IMG_Quit();
     }
+
+    logger_destroy();
     SDL_Quit();
 }

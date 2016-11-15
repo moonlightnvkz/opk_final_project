@@ -15,6 +15,14 @@ typedef struct tVector2f {
     float y;
 } Vector2f;
 
+typedef struct tObjectGeometry
+{
+    float x;
+    float y;
+    int width;
+    int height;
+} ObjectGeometry;
+
 typedef struct tIntRect {
     int x;
     int y;

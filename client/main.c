@@ -12,75 +12,26 @@
 #include "player.h"
 #include "default_values.h"
 #include "cleaner.h"
+#include "processors.h"
+#include "initialization.h"
+#include "loggers.h"
 
-// TODO: threading (reciever, socket mutex)
-
+// TODO: bullet type, then ↓
+// TODO: shooting (not high fire rate; put bullets in a /-queue-/ array, process them for O(n2))
+// TODO: threading? (reciever, socket mutex). Not needed for now. Will try to avoid it
+// TODO: process key -> add to queue -> send -> simulate execution -> recieve -> apply (remove from the queue if ok)
 // pthread_mutex_t socket_lock;
 
-int time_elapsed(struct timeb *time)
-{
-    struct timeb prev_time = *time;
-    ftime(time);
-    return (int) (1000.0 * (time->time    - prev_time.time) +
-                           (time->millitm - prev_time.millitm));
-}
-
-void reciever_thread(void *sock)
-{
-    // pthread_mutex_lock(&socket_lock);
-    char server_reply[2000];
-    if (recieve_reply_from_the_server(sock, server_reply, 2000))
-    {
-        puts("No message recieved");
-    }
-    // pthread_mutex_unlock(&socket_lock);
-}
-
-int initialize(SDL_Window **window, SDL_Renderer **renderer)
-{
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        fprintf(stderr, "SDL_Init error: %s", SDL_GetError());
-        exit(1);
-    }
-
-    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-        fprintf(stderr, "IMG_Init error: %s", SDL_GetError());
-        cleanup(NULL, NULL, true, false);
-        exit(1);
-    }
-    *window = SDL_CreateWindow("The Final Project", 100, 100,
-                                          WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
-    if (*window == NULL) {
-        fprintf(stderr, "SDL_CreateWindow error: %s", SDL_GetError());
-        cleanup(NULL, NULL, true, true);
-        exit(1);
-    }
-
-    *renderer = SDL_CreateRenderer(*window, -1,
-                                                SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (*renderer == NULL)
-    {
-        fprintf(stderr, "SDL_CreateRenderer error: %s", SDL_GetError());
-        cleanup(*window, NULL, true, true);
-        exit(1);
-    }
-}
-
-int process_key(Player *player, unsigned delta_ticks, SDL_Keycode key)
-{
-    switch(key)
-    {
-        case SDLK_ESCAPE:
-            return 1;
-        case SDLK_UP:
-        case SDLK_DOWN:
-        case SDLK_LEFT:
-        case SDLK_RIGHT:
-            player_key_process(player, delta_ticks, key);
-        default:
-            return 0;
-    }
-}
+//void reciever_thread(void *sock)
+//{
+//    // pthread_mutex_lock(&socket_lock);
+//    char server_reply[2000];
+//    if (recieve_reply_from_the_server(sock, server_reply, 2000))
+//    {
+//        puts("No message recieved");
+//    }
+//    // pthread_mutex_unlock(&socket_lock);
+//}
 
 int main(int argc , char *argv[])
 {
@@ -90,39 +41,36 @@ int main(int argc , char *argv[])
 
     Player player;
     if (player_create(&player, renderer) != 0) {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        IMG_Quit();
+        log_error("Failed to initialize player", __FUNCTION__, __LINE__);
+        cleanup(window, renderer, true, true);
         return 1;
     }
 
     bool quit = false;
-    unsigned curr_ticks, prev_ticks = 0;
+    unsigned curr_ticks = 0, prev_ticks = 0;
+    const Uint8 *keystates = SDL_GetKeyboardState(NULL);
     while (!quit)
     {
         SDL_Event event;
-        curr_ticks = SDL_GetTicks();
-
         while (SDL_PollEvent(&event)) {
             switch (event.type)
             {
                 case SDL_QUIT:
                     quit = true;
                     break;
-                case SDL_KEYDOWN:
-                    if (process_key(&player, curr_ticks - prev_ticks, event.key.keysym.sym)) {
-                        quit = true;
-                    }
-                    break;
                 default:;
             }
         }
+        if (process_key(&player, keystates)) {
+            quit = true;
+        }
+        process_moving(&player, curr_ticks - prev_ticks);
+
         SDL_RenderClear(renderer);
         player_render(&player, renderer);
         SDL_RenderPresent(renderer);
-        printf("%g\n", 1000.0f / (SDL_GetTicks() - curr_ticks));
         prev_ticks = curr_ticks;
+        curr_ticks = SDL_GetTicks();
     }
 
     player_destroy(&player);
@@ -150,7 +98,7 @@ int main(int argc , char *argv[])
     struct timeb time;
     ftime(&time);
     while (!slShouldClose() && !slGetKey(SL_KEY_ESCAPE)) {
-        player_key_process(&player, time_elapsed(&time));
+        player_keystates_process(&player, time_elapsed(&time));
 
         player_render(&player);
         slRender();

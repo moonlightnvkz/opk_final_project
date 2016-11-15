@@ -14,11 +14,32 @@ SDL_Texture *load_texture(const char* file, SDL_Renderer *renderer)
     return t;
 }
 
-void render_texture(SDL_Texture *texture, SDL_Renderer *renderer, int x, int y)
+void render_texture(SDL_Texture *texture, SDL_Renderer *renderer, int x, int y, int width, int height)
 {
     SDL_Rect dst;
     dst.x = x;
     dst.y = y;
-    SDL_QueryTexture(texture, NULL, NULL, &dst.w, &dst.h);
+    if (width < 0 || height < 0)
+    {
+        SDL_QueryTexture(texture, NULL, NULL, &dst.w, &dst.h);
+    } else {
+        dst.w = width;
+        dst.h = height;
+    }
     SDL_RenderCopy(renderer, texture, NULL, &dst);
+}
+
+void render_texture_ex(SDL_Texture *texture, SDL_Renderer *renderer, int x, int y, int width, int height, double angle)
+{
+    SDL_Rect dst;
+    dst.x = x;
+    dst.y = y;
+    if (width < 0 || height < 0)
+    {
+        SDL_QueryTexture(texture, NULL, NULL, &dst.w, &dst.h);
+    } else {
+        dst.w = width;
+        dst.h = height;
+    }
+    SDL_RenderCopyEx(renderer, texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
 }

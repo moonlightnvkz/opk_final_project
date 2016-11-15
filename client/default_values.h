@@ -9,7 +9,9 @@
 
 #define PLAYER_X            WINDOW_WIDTH / 10
 #define PLAYER_Y            WINDOW_HEIGHT / 10
+#define PLAYER_WIDTH        50
+#define PLAYER_HEIGHT       35
+#define PLAYER_VELOCITY     600
+
 #define PLAYER_TEXTURE      "res/player_texture.png"
-#define PLAYER_VELOCITY_X   5000
-#define PLAYER_VELOCITY_Y   5000
-#define FPS                 60
+#define MISSING_TEXTURE     "res/missing_texture.png"

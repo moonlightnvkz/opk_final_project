@@ -5,12 +5,13 @@
 #pragma once
 
 #include <stdio.h>
-#include <SDL2/SDL.h>
+#include <SDL_system.h>
 #include "geometry.h"
 
 typedef struct tPlayer {
-    Vector2f position;
+    ObjectGeometry geometry;
     SDL_Texture *texture;
+    double angle;
     Vector2i velocity;
 } Player;
 
@@ -18,10 +19,8 @@ int player_create(Player *player, SDL_Renderer *renderer);
 
 void player_destroy(Player *player);
 
-void player_key_process(Player *player, unsigned delta_ticks, SDL_Keycode key);
+void player_keystates_process(Player *player, const Uint8 *keystates);
 
-void player_move_to(Player *player, Vector2i dest);
-
-void player_move_on(Player *player, Vector2i shift);
+void player_move(Player *player, unsigned delta_ticks);
 
 void player_render(Player *player, SDL_Renderer *renderer);
