@@ -16,8 +16,13 @@ static void player_move_on(Player *player, float x, float y);
 
 static void player_move_to(Player *player, float x, float y);
 
-int player_create(Player *player, SDL_Renderer *renderer)
+Player *player_create(SDL_Renderer *renderer)
 {
+    Player *player = malloc(sizeof(Player));
+    if (player == NULL) {
+        log_error("Failed to allocate memory for player", __FUNCTION__, __LINE__);
+        exit(1);
+    }
     player->geometry.x = PLAYER_X;
     player->geometry.y = PLAYER_Y;
     player->geometry.width = PLAYER_WIDTH;
@@ -32,11 +37,11 @@ int player_create(Player *player, SDL_Renderer *renderer)
         player->texture = load_texture(MISSING_TEXTURE, renderer);
         if (player->texture == NULL) {
             log_error("Failed to load <missing_texture>", __FUNCTION__, __LINE__);
-            return 1;
+            return NULL;
         }
     }
 
-    return 0;
+    return player;
 }
 
 void player_destroy(Player *player)
@@ -96,4 +101,16 @@ void player_keystates_process(Player *player, const Uint8 *keystates)
     double x = mouse_x - player->geometry.x - player->geometry.width / 2.0;
     double y = mouse_y - player->geometry.y - player->geometry.height / 2.0;
     player->angle = (int)(atan2(y, x) / M_PI * 180) + 90;
+}
+
+void player_do_shot(Player *player, Bullets *bullets)
+{
+    if (bullets->number == BULLET_MAX_AMOUNT) {
+        return;
+    }
+    bullets->bullets[bullets->number].angle = player->angle;
+    bullets->bullets[bullets->number].geometry.x = player->geometry.x + player->geometry.width / 2;
+    bullets->bullets[bullets->number].geometry.y = player->geometry.y + player->geometry.height / 2;
+    bullets->bullets[bullets->number].active = true;
+    bullets->number++;
 }

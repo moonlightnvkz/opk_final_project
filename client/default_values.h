@@ -12,6 +12,13 @@
 #define PLAYER_WIDTH        50
 #define PLAYER_HEIGHT       35
 #define PLAYER_VELOCITY     600
+#define PLAYER_FIRE_RATE    5   // Shots per second
+
+#define BULLET_VELOCITY     600
+#define BULLET_MAX_AMOUNT   20
+#define BULLET_WIDTH        12
+#define BULLET_HIEGHT       20
 
 #define PLAYER_TEXTURE      "res/player_texture.png"
+#define BULLET_TEXTURE      "res/bullet_texture.png"
 #define MISSING_TEXTURE     "res/missing_texture.png"

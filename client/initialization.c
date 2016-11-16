@@ -8,7 +8,7 @@
 #include "default_values.h"
 #include "loggers.h"
 
-int initialize(SDL_Window **window, SDL_Renderer **renderer)
+int initialize(SDL_Window **window, SDL_Renderer **renderer, Player **player, Bullets **bullets)
 {
     logger_init();
 
@@ -39,5 +39,19 @@ int initialize(SDL_Window **window, SDL_Renderer **renderer)
         exit(1);
     }
 
+    *player = player_create(*renderer);
 
+    if (*player == NULL) {
+        log_error("Failed to initialize player", __FUNCTION__, __LINE__);
+        cleanup(*window, *renderer, true, true);
+        exit(1);
+    }
+
+    *bullets = bullet_create(*renderer);
+
+    if (*bullets == NULL) {
+        log_error("Failed to allocate memory for bullets", __FUNCTION__, __LINE__);
+        cleanup(*window, *renderer, true, true);
+        exit(1);
+    }
 }

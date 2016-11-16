@@ -6,5 +6,7 @@
 
 #include <SDL_video.h>
 #include <SDL_system.h>
+#include "player.h"
+#include "bullet.h"
 
-int initialize(SDL_Window **window, SDL_Renderer **renderer);
+int initialize(SDL_Window **window, SDL_Renderer **renderer, Player **player, Bullets **bullets);

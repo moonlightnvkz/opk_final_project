@@ -15,9 +15,11 @@
 #include "processors.h"
 #include "initialization.h"
 #include "loggers.h"
+#include "bullet.h"
 
-// TODO: bullet type, then ↓
+// TODO: put bullets in a circle queue !!!
 // TODO: shooting (not high fire rate; put bullets in a /-queue-/ array, process them for O(n2))
+// TODO: bullet reflection
 // TODO: threading? (reciever, socket mutex). Not needed for now. Will try to avoid it
 // TODO: process key -> add to queue -> send -> simulate execution -> recieve -> apply (remove from the queue if ok)
 // pthread_mutex_t socket_lock;
@@ -37,14 +39,9 @@ int main(int argc , char *argv[])
 {
     SDL_Window *window;
     SDL_Renderer *renderer;
-    initialize(&window, &renderer);
-
-    Player player;
-    if (player_create(&player, renderer) != 0) {
-        log_error("Failed to initialize player", __FUNCTION__, __LINE__);
-        cleanup(window, renderer, true, true);
-        return 1;
-    }
+    Bullets *bullets;
+    Player *player;
+    initialize(&window, &renderer, &player, &bullets);
 
     bool quit = false;
     unsigned curr_ticks = 0, prev_ticks = 0;
@@ -61,20 +58,21 @@ int main(int argc , char *argv[])
                 default:;
             }
         }
-        if (process_key(&player, keystates)) {
+        if (process_key(player, bullets, keystates)) {
             quit = true;
         }
-        process_moving(&player, curr_ticks - prev_ticks);
+        process_moving(player, bullets, curr_ticks - prev_ticks);
 
         SDL_RenderClear(renderer);
-        player_render(&player, renderer);
+        player_render(player, renderer);
+        bullet_render_all(bullets, renderer);
         SDL_RenderPresent(renderer);
         prev_ticks = curr_ticks;
         curr_ticks = SDL_GetTicks();
     }
 
-    player_destroy(&player);
-
+    player_destroy(player);
+    bullet_destroy(bullets);
     cleanup(window, renderer, true, true);
     return 0;
 
