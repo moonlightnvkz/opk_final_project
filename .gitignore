@@ -1,3 +1,5 @@
 cmake_modules/
 .idea/
 CMakeLists.txt
+
+client_copy/
