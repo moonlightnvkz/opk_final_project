@@ -5,23 +5,15 @@
 #include<sys/socket.h>    //socket
 #include<arpa/inet.h> //inet_addr
 #include <stdbool.h>
-#include "server_logic.h"
-#include <sys/timeb.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include "player.h"
-#include "default_values.h"
-#include "cleaner.h"
-#include "processors.h"
-#include "initialization.h"
 #include "loggers.h"
-#include "bullet.h"
+#include "game_logic/mvc.h"
+#include "server_logic/socket_controller.h"
 
-// TODO: put bullets in a circle queue !!!
-// TODO: shooting (not high fire rate; put bullets in a /-queue-/ array, process them for O(n2))
-// TODO: bullet reflection
-// TODO: threading? (reciever, socket mutex). Not needed for now. Will try to avoid it
+// TODO: fix send / receive - set precision
 // TODO: process key -> add to queue -> send -> simulate execution -> recieve -> apply (remove from the queue if ok)
+// TODO: bullet reflection
+// TODO: ?threading (reciever, socket mutex). Not needed for now. Will try to avoid it
 // pthread_mutex_t socket_lock;
 
 //void reciever_thread(void *sock)
@@ -37,11 +29,19 @@
 
 int main(int argc , char *argv[])
 {
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    Bullets *bullets;
-    Player *player;
-    initialize(&window, &renderer, &player, &bullets);
+    logger_init();
+    MVC *mvc = mvc_init();
+    if (mvc == NULL) {
+        log_error("Failed to create mvc", __FUNCTION__, __LINE__);
+        logger_destroy();
+        exit(1);
+    }
+    SocketController *socketController = sc_init();
+    if (socketController == NULL) {
+        log_error("Failed to create socket controller", __FUNCTION__, __LINE__);
+        logger_destroy();
+        exit(1);
+    }
 
     bool quit = false;
     unsigned curr_ticks = 0, prev_ticks = 0;
@@ -58,22 +58,26 @@ int main(int argc , char *argv[])
                 default:;
             }
         }
-        if (process_key(player, bullets, keystates)) {
+        if (mvc_process_key(mvc, keystates)) {
             quit = true;
         }
-        process_moving(player, bullets, curr_ticks - prev_ticks);
+        mvc_process_moving(mvc, curr_ticks - prev_ticks);
 
-        SDL_RenderClear(renderer);
-        player_render(player, renderer);
-        bullet_render_all(bullets, renderer);
-        SDL_RenderPresent(renderer);
+        // Returns 0 or 1
+        sc_send_current_state(socketController, mvc->this_player);
+
+        sc_receive_current_state(socketController);
+
+        mvc_apply_response(mvc, &socketController->requests_list, &socketController->last_response);
+
+        mvc_render(mvc);
+
         prev_ticks = curr_ticks;
         curr_ticks = SDL_GetTicks();
     }
 
-    player_destroy(player);
-    bullet_destroy(bullets);
-    cleanup(window, renderer, true, true);
+    mvc_destroy(mvc);
+    sc_destroy(socketController);
     return 0;
 
     /*
@@ -96,9 +100,9 @@ int main(int argc , char *argv[])
     struct timeb time;
     ftime(&time);
     while (!slShouldClose() && !slGetKey(SL_KEY_ESCAPE)) {
-        player_keystates_process(&player, time_elapsed(&time));
+        player_keystates_process(&this_player, time_elapsed(&time));
 
-        player_render(&player);
+        player_render(&this_player);
         slRender();
 
         message[0] = '1';

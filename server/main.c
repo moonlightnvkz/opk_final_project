@@ -3,66 +3,62 @@
 */
 
 #include<stdio.h>
-#include<string.h>    //strlen
 #include<sys/socket.h>
 #include<arpa/inet.h> //inet_addr
 #include<unistd.h>    //write
+#include <SDL_timer.h>
+#include "server_logic/response_request.h"
+#include "loggers.h"
+#include "game_logic/model_controller.h"
+#include "server_logic/socket_controller.h"
 
 int main(int argc , char *argv[])
 {
-    int socket_desc , client_sock , c ;
-    ssize_t read_size;
-    struct sockaddr_in server , client;
-    char client_message[2000];
-
-    //Create socket
-    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-    if (socket_desc == -1) {
-        printf("Could not create socket");
+    logger_init();
+    ModelController *mc = mc_init();
+    if (mc == NULL) {
+        log_error("Failed to initialize model controller", __FUNCTION__, __LINE__);
+        logger_destroy();
+        exit(1);
     }
-    puts("Socket created");
-
-    //Prepare the sockaddr_in structure
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 8888 );
-
-    //Bind
-    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0) {
-        //print the error message
-        perror("bind failed. Error");
-        return 1;
+    SocketController *sc = sc_init();
+    if (sc == NULL) {
+        log_error("Failed to initialize model controller", __FUNCTION__, __LINE__);
+        mc_destroy(mc);
+        logger_destroy();
+        exit(1);
     }
-    puts("bind done");
+    sc_accept_player(sc, 1);
+    sc_accept_player(sc, 2);
 
-    //Listen
-    listen(socket_desc , 3);
+    unsigned curr_ticks = 0, prev_ticks = 0;
+    bool quit = false;
+    while(!quit) {
+        if (sc_receive_player(sc, 1) != 0) {
+            quit = true;
+        }
+        request_log(&sc->request_player, "Request ", __FUNCTION__, __LINE__);
+        mc_apply_request(mc, mc->player1, &sc->request_player);
+        mc_create_response(mc, 1, sc->request_player.req_number, &sc->response_player);
+        response_log(&sc->response_player, "Response", __FUNCTION__, __LINE__);
+        write(sc->socket_player1, &sc->response_player, sizeof(ResponseStructure));
 
-    //Accept and incoming connection
-    puts("Waiting for incoming connections...");
-    c = sizeof(struct sockaddr_in);
+        if (sc_receive_player(sc, 2) != 0) {
+            quit = true;
+        }
+        request_log(&sc->request_player, "Request ", __FUNCTION__, __LINE__);
+        mc_apply_request(mc, mc->player2, &sc->request_player);
+        mc_create_response(mc, 2, sc->request_player.req_number, &sc->response_player);
+        response_log(&sc->response_player, "Response", __FUNCTION__, __LINE__);
+        write(sc->socket_player2, &sc->response_player, sizeof(ResponseStructure));
 
-    //accept connection from an incoming client
-    client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
-    if (client_sock < 0) {
-        perror("accept failed");
-        return 1;
-    }
-    puts("Connection accepted");
-
-    //Receive a message from client
-    while( (read_size = recv(client_sock , client_message , 2000 , 0)) > 0 ) {
-        //Send the message back to client
-        write(client_sock , client_message , strlen(client_message));
+        mc_process_moving(mc, curr_ticks - prev_ticks);
+        prev_ticks = curr_ticks;
+        curr_ticks = SDL_GetTicks();
     }
 
-    if(read_size == 0) {
-        puts("Client disconnected");
-        fflush(stdout);
-    }
-    else if(read_size == -1) {
-        perror("recv failed");
-    }
-
+    mc_destroy(mc);
+    sc_destroy(sc);
+    logger_destroy();
     return 0;
 }

@@ -3,10 +3,13 @@
 //
 
 #include <math.h>
+#include <SDL_mouse.h>
+#include <SDL_timer.h>
 #include "player.h"
-#include "default_values.h"
+#include "bullet.h"
 #include "sdl_helpers.h"
-#include "loggers.h"
+#include "../default_values.h"
+#include "../loggers.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
@@ -20,7 +23,7 @@ Player *player_create(SDL_Renderer *renderer)
 {
     Player *player = malloc(sizeof(Player));
     if (player == NULL) {
-        log_error("Failed to allocate memory for player", __FUNCTION__, __LINE__);
+        log_error("Failed to allocate memory for this_player", __FUNCTION__, __LINE__);
         exit(1);
     }
     player->geometry.x = PLAYER_X;
@@ -47,6 +50,7 @@ Player *player_create(SDL_Renderer *renderer)
 void player_destroy(Player *player)
 {
     SDL_DestroyTexture(player->texture);
+    free(player);
 }
 
 void player_move(Player *player, unsigned delta_ticks)
@@ -105,6 +109,11 @@ void player_keystates_process(Player *player, const Uint8 *keystates)
 
 void player_do_shot(Player *player, Bullets *bullets)
 {
+    static unsigned last_shot_time = 0;
+    unsigned time = SDL_GetTicks();
+    if (time - last_shot_time < (float)1 / PLAYER_FIRE_RATE * 1000) {
+        return;
+    }
     if (bullets->number == BULLET_MAX_AMOUNT) {
         return;
     }
@@ -113,4 +122,5 @@ void player_do_shot(Player *player, Bullets *bullets)
     bullets->bullets[bullets->number].geometry.y = player->geometry.y + player->geometry.height / 2;
     bullets->bullets[bullets->number].active = true;
     bullets->number++;
+    last_shot_time = time;
 }

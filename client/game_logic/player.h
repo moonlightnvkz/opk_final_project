@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <SDL_system.h>
 #include "geometry.h"
-#include "bullet.h"
+
+typedef struct tBullets Bullets;
 
 typedef struct tPlayer {
     ObjectGeometry geometry;

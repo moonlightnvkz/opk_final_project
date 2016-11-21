@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include "bullet.h"
-#include "default_values.h"
-#include "loggers.h"
+#include "../default_values.h"
+#include "../loggers.h"
 #include "sdl_helpers.h"
 
 #ifndef M_PI
@@ -50,8 +50,16 @@ Bullets *bullet_create(SDL_Renderer *renderer)
 
 void bullet_destroy(Bullets *bullets)
 {
+    SDL_DestroyTexture(bullets->texture);
     free(bullets->bullets);
     free(bullets);
+}
+
+static void swap_bullets(Bullet *bullet1, Bullet *bullet2)
+{
+    Bullet temp = *bullet1;
+    *bullet1 = *bullet2;
+    *bullet2 = temp;
 }
 
 void bullet_move_all(Bullets *bullets, unsigned delta_ticks)
@@ -65,15 +73,29 @@ void bullet_move_all(Bullets *bullets, unsigned delta_ticks)
                 bullet->geometry.y < 0 || bullet->geometry.y > WINDOW_HEIGHT) {
                 bullet->active = false;
                 bullets->number--;
+                swap_bullets(bullet, bullets->bullets + bullets->number);
             }
         }
     }
 }
 
+static bool bullet_should_reflect(Bullet *bullet, unsigned delta_ticks)
+{
+    return false;
+}
+
+static void bullet_reflect(Bullet *bullet, unsigned delta_ticks)
+{
+
+}
 void bullet_move(Bullet *bullet, unsigned delta_ticks)
 {
-    bullet->geometry.y -= (float) delta_ticks / 1000 * BULLET_VELOCITY * cos(bullet->angle / 180 * M_PI);
-    bullet->geometry.x += (float) delta_ticks / 1000 * BULLET_VELOCITY * sin(bullet->angle / 180 * M_PI);
+    if (bullet_should_reflect(bullet, delta_ticks)) {
+        bullet_reflect(bullet, delta_ticks);
+    } else {
+        bullet->geometry.y -= (float) delta_ticks / 1000 * BULLET_VELOCITY * cos(bullet->angle / 180 * M_PI);
+        bullet->geometry.x += (float) delta_ticks / 1000 * BULLET_VELOCITY * sin(bullet->angle / 180 * M_PI);
+    }
 }
 
 void bullet_render_all(Bullets *bullets, SDL_Renderer *renderer)

@@ -1,46 +1,51 @@
 //
-// Created by moonlightnvkz on 15.11.16.
+// Created by moonlightnvkz on 19.11.16.
 //
 
 #pragma once
 
 #include <stdlib.h>
 
-typedef void *Pointer;
+typedef char *Pointer;
 
-typedef struct tQueue {
+typedef struct tDeque {
     Pointer *buffer;
     Pointer *buffer_end;
     Pointer *data_start;
     Pointer *data_end;
-    size_t allocated;
     size_t size;
     size_t initial_size;
     size_t increment;
     int _isTuned;
-} Queue;
+} Deque;
 
 /* Создать пустую очередь */
-void queue_create(Queue *pqueue);
+void deque_create(Deque *pqueue);
 
 /* Уничтожить очередь, освободив выделенную память */
-void queue_destroy(Queue *pqueue);
+void deque_destroy(Deque *pqueue);
 
 /* Поместить значение value в конец очереди */
-void queue_enqueue(Queue *pqueue, Pointer value);
+void deque_add_first(Deque *pqueue, Pointer value);
+
+void deque_add_last(Deque *pqueue, Pointer value);
 
 /* Возвращает количество элементов в очереди (0, если очередь пуста) */
-size_t queue_size(Queue *pqueue);
+size_t deque_size(Deque *pqueue);
 
 /* Исключить и вернуть значение первого элемента очереди.
    Если очередь пуста, возвращает 0 */
-Pointer queue_dequeue(Queue *pqueue);
+Pointer deque_remove_first(Deque *pqueue);
+
+Pointer deque_remove_last(Deque *pqueue);
 
 /*
  * Возвращает значение первого элемента, не удаляя его из очереди.
  * Если очередь пуста, возвращает 0
  */
-Pointer queue_peek(Queue *pqueue);
+Pointer deque_peek_first(Deque *pqueue);
+
+Pointer deque_peek_last(Deque *pqueue);
 
 /*
  * Настраивает параметры очереди.
@@ -49,6 +54,4 @@ Pointer queue_peek(Queue *pqueue);
  * increment: на сколько элементов расширять очередь при последующих
  *            выделениях памяти
  */
-void queue_tune(Queue *pqueue, size_t initial_size, size_t increment);
-
-int queue_full(Queue *pqueue);
+void deque_tune(Deque *pqueue, size_t initial_size, size_t increment);
