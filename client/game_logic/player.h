@@ -15,6 +15,8 @@ typedef struct tPlayer {
     SDL_Texture *texture;
     double angle;
     Vector2i velocity;
+    bool shot_done;         // on this loop. After request is sent, shot_done -> false
+    unsigned last_shot_time;
 } Player;
 
 Player *player_create(SDL_Renderer *renderer);

@@ -11,6 +11,12 @@ typedef struct tPlayer Player;
 typedef struct tBullets Bullets;
 typedef struct tResponseStructure ResponseStructure;
 
+typedef enum eMvcReturnCodes {
+    MVC_NO_ERRORS,
+    MVC_EXIT_KEY_PRESSED,
+    MVC_SHOT_DONE
+} MvcReturnCodes;
+
 typedef struct tMVC {
     SDL_Window *window;
     SDL_Renderer *renderer;

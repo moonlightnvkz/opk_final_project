@@ -16,7 +16,9 @@ typedef struct tPlayer {
     ObjectGeometry geometry;
     double angle;
     Vector2i velocity;
+    bool shot_done;
     unsigned last_request_time;
+    unsigned last_shot_time;
 } Player;
 
 

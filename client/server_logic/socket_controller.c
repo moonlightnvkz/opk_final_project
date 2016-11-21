@@ -72,7 +72,7 @@ int sc_connect_to_server(SocketController *sc) {
 int sc_send_current_state(SocketController *sc, Player *player)
 {
     static unsigned last_send_time = 0;
-    if (last_send_time < 1 / SERVER_TICKRATE * 1000) {
+    if (!player->shot_done && last_send_time < 1 / SERVER_TICKRATE * 1000) {
         return SC_NO_ERROR;
     }
     RequestStructure *peeked = ((RequestStructure *) deque_peek_last(&sc->requests_list));

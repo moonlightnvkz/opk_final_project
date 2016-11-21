@@ -15,6 +15,7 @@ typedef struct tPlayerStateRequest {
     double angle;
     Vector2f position;
     Vector2i velocity;
+    bool shot_done;
 } PlayerStateRequest;
 
 typedef struct tRequestStructure {
@@ -27,6 +28,7 @@ typedef struct tPlayerStateResponse {
     double angle;
     Vector2f position;
     Vector2i velocity;
+    bool shot_done;
 } PlayerStateResponse;
 
 typedef struct tResponseStructure {

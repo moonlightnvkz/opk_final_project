@@ -66,17 +66,19 @@ void mc_apply_request(ModelController *mc, Player *player, RequestStructure *req
 {
     mc_check_request_and_fix(player, request);
     player_apply_request(player, request);
+    if (request->player_state.shot_done) {
+        player_do_shot(player, mc->bullets);
+    }
 }
 
 void mc_check_request_and_fix(Player *player, RequestStructure *request) {
-    unsigned time = SDL_GetTicks();
     if (request->player_state.velocity.x > PLAYER_VELOCITY) {
         request->player_state.velocity.x = PLAYER_VELOCITY;
     }
     if (request->player_state.velocity.y > PLAYER_VELOCITY) {
         request->player_state.velocity.y = PLAYER_VELOCITY;
     }
-    unsigned time_elapsed = time - player->last_request_time;
+    unsigned time_elapsed = SDL_GetTicks() - player->last_request_time;
     float shift_x = request->player_state.position.x - player->geometry.x;
     float shift_y = request->player_state.position.y - player->geometry.y;
     if (shift_x / time_elapsed * 1000 > PLAYER_VELOCITY) {
@@ -86,6 +88,10 @@ void mc_check_request_and_fix(Player *player, RequestStructure *request) {
     if (shift_y / time_elapsed * 1000 > PLAYER_VELOCITY) {
         request->player_state.position.y = request->player_state.position.y +
                                            (float) time_elapsed / 1000 * PLAYER_VELOCITY;
+    }
+    if (request->player_state.shot_done && (SDL_GetTicks() - player->last_shot_time < (float) 1000 / PLAYER_FIRE_RATE)) {
+        log_error("Too high firerate", __FUNCTION__, __LINE__);
+        request->player_state.shot_done = false;
     }
 }
 
@@ -104,4 +110,9 @@ void mc_create_response(ModelController *mc, int player, unsigned req_number, Re
         default:
             log_error("Unsupported player", __FUNCTION__, __LINE__);
     }
+}
+
+void mc_reset_temp_flags(ModelController *mc)
+{
+    mc->player1->shot_done = mc->player2->shot_done = 0;
 }

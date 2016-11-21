@@ -33,7 +33,8 @@ Player *player_create(SDL_Renderer *renderer)
     player->angle = 0.0;
     player->velocity.x = 0;
     player->velocity.y = 0;
-
+    player->shot_done = false;
+    player->last_shot_time = 0;
     player->texture = load_texture(PLAYER_TEXTURE, renderer);
     if (player->texture == NULL) {
         log_error("Failed to load texture", __FUNCTION__, __LINE__);
@@ -109,18 +110,18 @@ void player_keystates_process(Player *player, const Uint8 *keystates)
 
 void player_do_shot(Player *player, Bullets *bullets)
 {
-    static unsigned last_shot_time = 0;
     unsigned time = SDL_GetTicks();
-    if (time - last_shot_time < (float)1 / PLAYER_FIRE_RATE * 1000) {
+    if (time - player->last_shot_time < (float)1 / PLAYER_FIRE_RATE * 1000) {
         return;
     }
     if (bullets->number == BULLET_MAX_AMOUNT) {
         return;
     }
+    player->shot_done = true;
     bullets->bullets[bullets->number].angle = player->angle;
     bullets->bullets[bullets->number].geometry.x = player->geometry.x + player->geometry.width / 2;
     bullets->bullets[bullets->number].geometry.y = player->geometry.y + player->geometry.height / 2;
     bullets->bullets[bullets->number].active = true;
     bullets->number++;
-    last_shot_time = time;
+    player->last_shot_time = time;
 }

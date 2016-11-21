@@ -35,6 +35,7 @@ Player *player_create()
     player->velocity.x = 0;
     player->velocity.y = 0;
     player->last_request_time = 0;
+    player->last_shot_time = 0;
     return player;
 }
 
@@ -64,9 +65,8 @@ static void player_move_on(Player *player, float x, float y)
 
 void player_do_shot(Player *player, Bullets *bullets)
 {
-    static unsigned last_shot_time = 0;
     unsigned time = SDL_GetTicks();
-    if (time - last_shot_time < (float)1 / PLAYER_FIRE_RATE * 1000) {
+    if (time - player->last_shot_time < (float)1 / PLAYER_FIRE_RATE * 1000) {
         return;
     }
     if (bullets->number == BULLET_MAX_AMOUNT) {
@@ -77,7 +77,7 @@ void player_do_shot(Player *player, Bullets *bullets)
     bullets->bullets[bullets->number].geometry.y = player->geometry.y + player->geometry.height / 2;
     bullets->bullets[bullets->number].active = true;
     bullets->number++;
-    last_shot_time = time;
+    player->last_shot_time = time;
 }
 
 void player_apply_request(Player *player, RequestStructure *request)
@@ -88,4 +88,5 @@ void player_apply_request(Player *player, RequestStructure *request)
     player->velocity.x = request->player_state.velocity.x;
     player->velocity.y = request->player_state.velocity.y;
     player->last_request_time = SDL_GetTicks();
+    player->shot_done = request->player_state.shot_done;
 }

@@ -3,13 +3,13 @@
 //
 
 #pragma once
-#include<arpa/inet.h> //inet_addr
+#include <arpa/inet.h> //inet_addr
 #include "../my_deque.h"
 #include "response_request.h"
 
 typedef struct tPlayer Player;
 
-typedef enum eScErrors {
+typedef enum eScReturnCodes {
     SC_NO_ERROR,
     SC_RECEIVE_FAILED,
     SC_SEND_FAILED,
@@ -17,7 +17,7 @@ typedef enum eScErrors {
     SC_CONNECTION_FAILED,
     SC_START_SIGNAL_MATHCHING_ERROR,
     SC_SOCKET_CREATION_ERROR
-} ScErrors;
+} ScReturnCodes;
 
 typedef struct tSocketController {
     int sock;

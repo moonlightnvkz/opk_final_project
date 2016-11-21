@@ -7,13 +7,26 @@
 #include<arpa/inet.h> //inet_addr
 #include "response_request.h"
 
+typedef enum eScErrors {
+    SC_NO_ERROR,
+    SC_RECEIVE_FAILED,
+    SC_SEND_FAILED,
+    SC_CONNECTION_CLOSED,
+    SC_CONNECTION_FAILED,
+    SC_START_SIGNAL_MATHCHING_ERROR,
+    SC_SOCKET_CREATION_ERROR,
+    SC_UNSUPPORTED_PLAYER
+} ScErrors;
+
 typedef struct tSocketController {
     int socket_desc;
     int socket_player1;
     int socket_player2;
     struct sockaddr_in server;
-    RequestStructure request_player;
-    ResponseStructure response_player;
+    RequestStructure request_player1;
+    RequestStructure request_player2;
+    ResponseStructure response_player1;
+    ResponseStructure response_player2;
 } SocketController;
 
 SocketController *sc_init();

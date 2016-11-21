@@ -1,31 +1,16 @@
-/*
-    C ECHO client example using sockets
-*/
-#include<stdio.h> //printf
-#include<sys/socket.h>    //socket
-#include<arpa/inet.h> //inet_addr
+#include <arpa/inet.h> //inet_addr
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include "loggers.h"
 #include "game_logic/mvc.h"
 #include "server_logic/socket_controller.h"
+#include "game_logic/player.h"
 
-// TODO: fix send / receive - set precision
-// TODO: process key -> add to queue -> send -> simulate execution -> recieve -> apply (remove from the queue if ok)
+// TODO: shot -> request to the server. response -> rewrite all bullets
+// TODO: collision
+// TODO: kills
 // TODO: bullet reflection
-// TODO: ?threading (reciever, socket mutex). Not needed for now. Will try to avoid it
-// pthread_mutex_t socket_lock;
-
-//void reciever_thread(void *sock)
-//{
-//    // pthread_mutex_lock(&socket_lock);
-//    char server_reply[2000];
-//    if (recieve_reply_from_the_server(sock, server_reply, 2000))
-//    {
-//        puts("No message recieved");
-//    }
-//    // pthread_mutex_unlock(&socket_lock);
-//}
+// TODO: EXPLOSIONS!!!
 
 int main(int argc , char *argv[])
 {
@@ -64,14 +49,17 @@ int main(int argc , char *argv[])
                 default:;
             }
         }
-        if (mvc_process_key(mvc, keystates)) {
-            quit = true;
+        int res;
+        res = mvc_process_key(mvc, keystates);
+        if (res == MVC_EXIT_KEY_PRESSED) {
+            break;
         }
+
         mvc_process_moving(mvc, curr_ticks - prev_ticks);
 
         sc_send_current_state(socketController, mvc->this_player);
 
-        int res = sc_receive_current_state(socketController);
+        res = sc_receive_current_state(socketController);
         if (res == SC_CONNECTION_CLOSED) {
             log_error("Connection closed", __FUNCTION__, __LINE__);
             break;

@@ -39,27 +39,30 @@ int main(int argc , char *argv[])
     while(!quit) {
         int res;
         res = sc_receive_request(sc, 1);
-        if (res == 1) {
-            quit = true;
+        if (res == SC_CONNECTION_CLOSED || res == SC_UNSUPPORTED_PLAYER) {
+            break;
         }
-        if (res != 2) {
-            request_log(&sc->request_player, "Request ", __FUNCTION__, __LINE__);
-            mc_apply_request(mc, mc->player1, &sc->request_player);
-            mc_create_response(mc, 1, sc->request_player.req_number, &sc->response_player);
-            response_log(&sc->response_player, "Response", __FUNCTION__, __LINE__);
-            sc_send_response(sc, 1);
+        if (res == SC_NO_ERROR) {
+            request_log(&sc->request_player1, "Request ", __FUNCTION__, __LINE__);
+            mc_apply_request(mc, mc->player1, &sc->request_player1);
         }
+
         res = sc_receive_request(sc, 2);
-        if (res == 1) {
-            quit = true;
+        if (res == SC_CONNECTION_CLOSED || res == SC_UNSUPPORTED_PLAYER) {
+            break;
         }
-        if (res != 2) {
-            request_log(&sc->request_player, "Request ", __FUNCTION__, __LINE__);
-            mc_apply_request(mc, mc->player2, &sc->request_player);
-            mc_create_response(mc, 2, sc->request_player.req_number, &sc->response_player);
-            response_log(&sc->response_player, "Response", __FUNCTION__, __LINE__);
-            sc_send_response(sc, 2);
+        if (res == SC_NO_ERROR) {
+            request_log(&sc->request_player2, "Request ", __FUNCTION__, __LINE__);
+            mc_apply_request(mc, mc->player2, &sc->request_player2);
         }
+        mc_create_response(mc, 1, sc->request_player1.req_number, &sc->response_player1);
+        mc_create_response(mc, 2, sc->request_player2.req_number, &sc->response_player2);
+        response_log(&sc->response_player1, "Response", __FUNCTION__, __LINE__);
+        response_log(&sc->response_player2, "Response", __FUNCTION__, __LINE__);
+        sc_send_response(sc, 1);
+        sc_send_response(sc, 2);
+
+        mc_reset_temp_flags(mc);
         mc_process_moving(mc, curr_ticks - prev_ticks);
         prev_ticks = curr_ticks;
         curr_ticks = SDL_GetTicks();

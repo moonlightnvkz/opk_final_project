@@ -100,7 +100,7 @@ void mvc_render(MVC *mvc)
 int mvc_process_key(MVC *mvc, const Uint8 *keystates)
 {
     if (keystates[SDL_SCANCODE_ESCAPE]) {
-        return 1;
+        return MVC_EXIT_KEY_PRESSED;
     }
 
     player_keystates_process(mvc->this_player, keystates);
@@ -108,7 +108,7 @@ int mvc_process_key(MVC *mvc, const Uint8 *keystates)
     if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
         player_do_shot(mvc->this_player, mvc->bullets);
     }
-    return 0;
+    return MVC_NO_ERRORS;
 }
 
 void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
@@ -138,6 +138,10 @@ void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_
     mvc->diff_player->velocity.x = last_response->diff_player_state.velocity.x;
     mvc->diff_player->velocity.y = last_response->diff_player_state.velocity.y;
     mvc->diff_player->angle = last_response->diff_player_state.angle;
+    mvc->diff_player->shot_done = last_response->diff_player_state.shot_done;
+    if (mvc->diff_player->shot_done == true) {
+        player_do_shot(mvc->diff_player, mvc->bullets);
+    }
     char msg[50];
     sprintf(msg, "Req/res positions differs on (%.3f, %.3f)", dx, dy);
     log_action(msg, __FUNCTION__, __LINE__);
