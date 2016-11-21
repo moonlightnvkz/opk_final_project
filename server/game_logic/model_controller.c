@@ -100,6 +100,7 @@ void mc_create_response(ModelController *mc, int player, unsigned req_number, Re
         case 2:
             response_set_player_states(&res->this_player_state, mc->player2);
             response_set_player_states(&res->diff_player_state, mc->player1);
+            break;
         default:
             log_error("Unsupported player", __FUNCTION__, __LINE__);
     }

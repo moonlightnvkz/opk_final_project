@@ -9,6 +9,16 @@
 
 typedef struct tPlayer Player;
 
+typedef enum eScErrors {
+    SC_NO_ERROR,
+    SC_RECEIVE_FAILED,
+    SC_SEND_FAILED,
+    SC_CONNECTION_CLOSED,
+    SC_CONNECTION_FAILED,
+    SC_START_SIGNAL_MATHCHING_ERROR,
+    SC_SOCKET_CREATION_ERROR
+} ScErrors;
+
 typedef struct tSocketController {
     int sock;
     struct sockaddr_in server;
@@ -25,13 +35,6 @@ int sc_send_current_state(SocketController *sc, Player *player);
 // @return:
 // 0 - all is Ok
 // 1 - failed to receive
-// 2 - reply might be wrong
-// 3 - changes need to be applied
-// 4 - dequeued == NULL
 int sc_receive_current_state(SocketController *sc);
 
-//int sc_connect_to_server(SocketController *sc);
-
-//int sc_send_data_to_the_server(SocketController *sc, char *message, size_t length);
-
-//int sc_receive_reply_from_the_server(SocketController *sc, char *reply, size_t size);
+int sc_receive_start_signal(SocketController *sc);

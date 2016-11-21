@@ -3,6 +3,7 @@
 //
 
 #include <stdio.h>
+#include <unistd.h>    //close
 #include <SDL_timer.h>
 #include "socket_controller.h"
 #include "../default_values.h"
@@ -26,7 +27,7 @@ SocketController *sc_init()
     deque_create(&sc->requests_list);
 
     if (sc_connect_to_server(sc) != 0) {
-        log_error("Failed to coonect to the server", __FUNCTION__, __LINE__);
+        log_error("Failed to connect to the server", __FUNCTION__, __LINE__);
         sc_destroy(sc);
         return NULL;
     }
@@ -41,6 +42,7 @@ void sc_destroy(SocketController *sc)
     if (shutdown(sc->sock, 2) == -1) {
         log_error("Failed to close the socket", __FUNCTION__, __LINE__);
     };
+    close(sc->sock);
     deque_destroy(&sc->requests_list);
     free(sc);
 }
@@ -49,9 +51,9 @@ int sc_connect_to_server(SocketController *sc) {
     //Create socket
     sc->sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sc->sock == -1) {
-        printf("Could not create socket");
+        log_error("Failed to create socket", __FUNCTION__, __LINE__);
+        return SC_SOCKET_CREATION_ERROR;
     }
-    puts("Socket created");
 
     sc->server.sin_addr.s_addr = inet_addr(SERVER_IP);
     sc->server.sin_family = AF_INET;
@@ -59,19 +61,19 @@ int sc_connect_to_server(SocketController *sc) {
 
     //Connect to remote server
     if (connect(sc->sock, (struct sockaddr *) &sc->server, sizeof(sc->server)) < 0) {
-        perror("Connect failed. Error");
-        return 1;
+        log_error("Failed to connect to the server", __FUNCTION__, __LINE__);
+        return SC_CONNECTION_FAILED;
     }
 
-    puts("Connected\n");
-    return 0;
+    log_action("Connected", __FUNCTION__, __LINE__);
+    return SC_NO_ERROR;
 }
 
 int sc_send_current_state(SocketController *sc, Player *player)
 {
     static unsigned last_send_time = 0;
     if (last_send_time < 1 / SERVER_TICKRATE * 1000) {
-        return 0;
+        return SC_NO_ERROR;
     }
     RequestStructure *peeked = ((RequestStructure *) deque_peek_last(&sc->requests_list));
     unsigned last_number;
@@ -83,40 +85,52 @@ int sc_send_current_state(SocketController *sc, Player *player)
     RequestStructure *req = request_create(player, last_number + 1);
     deque_add_last(&sc->requests_list, (Pointer) req);
 
-    if (sc_send_data_to_the_server(sc, req, sizeof(RequestStructure)) != 0) {
-        log_error("An error occured while sending request", __FUNCTION__, __LINE__);
-        return 1;
-    }
-
     last_send_time = SDL_GetTicks();
-    return 0;
-
+    return sc_send_data_to_the_server(sc, req, sizeof(RequestStructure));
 }
 
 // @return:
 // 0 - all is Ok
 // 1 - failed to receive
 int sc_receive_current_state(SocketController *sc) {
-    if (sc_receive_reply_from_the_server(sc, &sc->last_response, sizeof(ResponseStructure)) != 0) {
-        return 1;
-    }
-    return 0;
+    return sc_receive_reply_from_the_server(sc, &sc->last_response, sizeof(ResponseStructure));
 }
 
 int sc_send_data_to_the_server(SocketController *sc, RequestStructure *request, size_t size) {
     if (send(sc->sock, request, size, MSG_DONTWAIT) < 0) {
         log_error("Send failed", __FUNCTION__, __LINE__);
-        return 1;
+        return SC_SEND_FAILED;
     }
     request_log(request, "Send", __FUNCTION__, __LINE__);
-    return 0;
+    return SC_NO_ERROR;
 }
 
 int sc_receive_reply_from_the_server(SocketController *sc, ResponseStructure *reply, size_t size) {
-    if (recv(sc->sock, reply, size, MSG_DONTWAIT) < 0) {
+    ssize_t res = recv(sc->sock, reply, size, MSG_DONTWAIT);
+    if (res == -1) {
         log_error("Receive failed", __FUNCTION__, __LINE__);
-        return 1;
+        return SC_RECEIVE_FAILED;
+    }
+    if (res == 0) {
+        log_error("Connection closed", __FUNCTION__, __LINE__);
+        return SC_CONNECTION_CLOSED;
     }
     response_log(reply, "Recv", __FUNCTION__, __LINE__);
-    return 0;
+    return SC_NO_ERROR;
+}
+
+int sc_receive_start_signal(SocketController *sc)
+{
+    char start_signal = 0;
+    if (recv(sc->sock, &start_signal, SERVER_START_SIGNAL_LENGTH, MSG_WAITALL) <= 0) {
+        log_error("Receive of start signal failed", __FUNCTION__, __LINE__);
+        return SC_RECEIVE_FAILED;
+    }
+    if (start_signal != SERVER_START_SIGNAL) {
+        return SC_START_SIGNAL_MATHCHING_ERROR;
+    }
+    char msg[50];
+    sprintf(msg, "Start signal received:%c", start_signal);
+    log_action("Start signal received", __FUNCTION__, __LINE__);
+    return SC_NO_ERROR;
 }

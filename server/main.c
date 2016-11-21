@@ -23,7 +23,7 @@ int main(int argc , char *argv[])
     }
     SocketController *sc = sc_init();
     if (sc == NULL) {
-        log_error("Failed to initialize model controller", __FUNCTION__, __LINE__);
+        log_error("Failed to initialize socket controller", __FUNCTION__, __LINE__);
         mc_destroy(mc);
         logger_destroy();
         exit(1);
@@ -31,27 +31,35 @@ int main(int argc , char *argv[])
     sc_accept_player(sc, 1);
     sc_accept_player(sc, 2);
 
+    sc_send_start_signal(sc, 1);
+    sc_send_start_signal(sc, 2);
+
     unsigned curr_ticks = 0, prev_ticks = 0;
     bool quit = false;
     while(!quit) {
-        if (sc_receive_player(sc, 1) != 0) {
+        int res;
+        res = sc_receive_request(sc, 1);
+        if (res == 1) {
             quit = true;
         }
-        request_log(&sc->request_player, "Request ", __FUNCTION__, __LINE__);
-        mc_apply_request(mc, mc->player1, &sc->request_player);
-        mc_create_response(mc, 1, sc->request_player.req_number, &sc->response_player);
-        response_log(&sc->response_player, "Response", __FUNCTION__, __LINE__);
-        write(sc->socket_player1, &sc->response_player, sizeof(ResponseStructure));
-
-        if (sc_receive_player(sc, 2) != 0) {
+        if (res != 2) {
+            request_log(&sc->request_player, "Request ", __FUNCTION__, __LINE__);
+            mc_apply_request(mc, mc->player1, &sc->request_player);
+            mc_create_response(mc, 1, sc->request_player.req_number, &sc->response_player);
+            response_log(&sc->response_player, "Response", __FUNCTION__, __LINE__);
+            sc_send_response(sc, 1);
+        }
+        res = sc_receive_request(sc, 2);
+        if (res == 1) {
             quit = true;
         }
-        request_log(&sc->request_player, "Request ", __FUNCTION__, __LINE__);
-        mc_apply_request(mc, mc->player2, &sc->request_player);
-        mc_create_response(mc, 2, sc->request_player.req_number, &sc->response_player);
-        response_log(&sc->response_player, "Response", __FUNCTION__, __LINE__);
-        write(sc->socket_player2, &sc->response_player, sizeof(ResponseStructure));
-
+        if (res != 2) {
+            request_log(&sc->request_player, "Request ", __FUNCTION__, __LINE__);
+            mc_apply_request(mc, mc->player2, &sc->request_player);
+            mc_create_response(mc, 2, sc->request_player.req_number, &sc->response_player);
+            response_log(&sc->response_player, "Response", __FUNCTION__, __LINE__);
+            sc_send_response(sc, 2);
+        }
         mc_process_moving(mc, curr_ticks - prev_ticks);
         prev_ticks = curr_ticks;
         curr_ticks = SDL_GetTicks();

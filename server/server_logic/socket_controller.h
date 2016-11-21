@@ -22,4 +22,8 @@ void sc_destroy(SocketController *sc);
 
 int sc_accept_player(SocketController *sc, unsigned number);
 
-int sc_receive_player(SocketController *sc, unsigned number);
+int sc_receive_request(SocketController *sc, unsigned number_of_player);
+
+int sc_send_response(SocketController *sc, unsigned number_of_player);
+
+int sc_send_start_signal(SocketController *sc, unsigned number_of_player);

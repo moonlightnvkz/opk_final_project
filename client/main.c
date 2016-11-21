@@ -39,10 +39,16 @@ int main(int argc , char *argv[])
     SocketController *socketController = sc_init();
     if (socketController == NULL) {
         log_error("Failed to create socket controller", __FUNCTION__, __LINE__);
+        mvc_destroy(mvc);
         logger_destroy();
         exit(1);
     }
-
+    if (sc_receive_start_signal(socketController) != SC_NO_ERROR) {
+        log_error("sc_receive_start_signal failed", __FUNCTION__, __LINE__);
+        mvc_destroy(mvc);
+        sc_destroy(socketController);
+        logger_destroy();
+    }
     bool quit = false;
     unsigned curr_ticks = 0, prev_ticks = 0;
     const Uint8 *keystates = SDL_GetKeyboardState(NULL);
@@ -63,10 +69,13 @@ int main(int argc , char *argv[])
         }
         mvc_process_moving(mvc, curr_ticks - prev_ticks);
 
-        // Returns 0 or 1
         sc_send_current_state(socketController, mvc->this_player);
 
-        sc_receive_current_state(socketController);
+        int res = sc_receive_current_state(socketController);
+        if (res == SC_CONNECTION_CLOSED) {
+            log_error("Connection closed", __FUNCTION__, __LINE__);
+            break;
+        }
 
         mvc_apply_response(mvc, &socketController->requests_list, &socketController->last_response);
 
@@ -78,50 +87,6 @@ int main(int argc , char *argv[])
 
     mvc_destroy(mvc);
     sc_destroy(socketController);
-    return 0;
-
-    /*
-    if (pthread_mutex_init(&socket_lock, NULL) != 0) {
-        puts("Mutex init failed");
-        return 2;
-    }
-    */
-
-    //---------------
-    /*
-    int sock;
-    struct sockaddr_in server;
-    char message[1000] , server_reply[2000];
-
-    if (connect_to_server(&sock, &server)) {
-        return 1;
-    }
-
-    struct timeb time;
-    ftime(&time);
-    while (!slShouldClose() && !slGetKey(SL_KEY_ESCAPE)) {
-        player_keystates_process(&this_player, time_elapsed(&time));
-
-        player_render(&this_player);
-        slRender();
-
-        message[0] = '1';
-        message[1] = '\0';
-        if (send_data_to_the_server(&sock, message)) {
-            break;
-        }
-
-        reciever_thread(&sock);
-
-        puts("Server reply :");
-        puts(server_reply);
-    }
-
-    // pthread_cancel(...);
-    if (shutdown(sock, 2) == -1) {
-        perror("Failed to close the socket");
-    };
-    slClose();
-     */
+    logger_destroy();
     return 0;
 }
