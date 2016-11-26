@@ -95,23 +95,6 @@ void mc_check_request_and_fix(Player *player, RequestStructure *request) {
     }
 }
 
-void mc_create_response(ModelController *mc, int player, unsigned req_number, ResponseStructure *res)
-{
-    res->res_number = req_number;
-    switch (player) {
-        case 1:
-            response_set_player_states(&res->this_player_state, mc->player1);
-            response_set_player_states(&res->diff_player_state, mc->player2);
-            break;
-        case 2:
-            response_set_player_states(&res->this_player_state, mc->player2);
-            response_set_player_states(&res->diff_player_state, mc->player1);
-            break;
-        default:
-            log_error("Unsupported player", __FUNCTION__, __LINE__);
-    }
-}
-
 void mc_reset_temp_flags(ModelController *mc)
 {
     mc->player1->shot_done = mc->player2->shot_done = 0;

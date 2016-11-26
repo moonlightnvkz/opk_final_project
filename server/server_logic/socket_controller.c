@@ -8,6 +8,7 @@
 #include "socket_controller.h"
 #include "../loggers.h"
 #include "../default_values.h"
+#include "../game_logic/model_controller.h"
 
 SocketController *sc_init()
 {
@@ -127,17 +128,24 @@ ResponseStructure *get_player_response_by_number(SocketController *sc, unsigned 
     }
 }
 
-int sc_send_response(SocketController *sc, unsigned number_of_player)
+void sc_create_responses(SocketController *sc, ModelController *mc)
 {
-    if (number_of_player != 1 && number_of_player != 2) {
-        log_error("Unsupported player", __FUNCTION__, __LINE__);
-        return SC_UNSUPPORTED_PLAYER;
-    }
-    int *player_socket = get_player_socket_by_number(sc, number_of_player);
-    ResponseStructure *player_response = get_player_response_by_number(sc, number_of_player);
-    if(send(*player_socket, player_response, sizeof(ResponseStructure), MSG_DONTWAIT) < 0)
+    response_set_player_states(&sc->response_player1.this_player_state, mc->player1);
+    response_set_player_states(&sc->response_player1.diff_player_state, mc->player2);
+    response_set_player_states(&sc->response_player2.this_player_state, mc->player2);
+    response_set_player_states(&sc->response_player2.diff_player_state, mc->player1);
+}
+
+int sc_send_responses(SocketController *sc)
+{
+    if(send(sc->socket_player1, &sc->response_player1, sizeof(ResponseStructure), MSG_DONTWAIT) < 0)
     {
-        log_error("Send failed", __FUNCTION__, __LINE__);
+        log_error("Send failed (player 1)", __FUNCTION__, __LINE__);
+        return SC_SEND_FAILED;
+    }
+    if(send(sc->socket_player2, &sc->response_player2, sizeof(ResponseStructure), MSG_DONTWAIT) < 0)
+    {
+        log_error("Send failed (player 2)", __FUNCTION__, __LINE__);
         return SC_SEND_FAILED;
     }
     return SC_NO_ERROR;

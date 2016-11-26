@@ -1,5 +1,8 @@
-cmake_modules/
+# CLion project files
 .idea/
+cmake_modules/
+cmake-build-debug/
 CMakeLists.txt
 
+# Copy of the client for test multiplayer part
 client_copy/

@@ -55,12 +55,10 @@ int main(int argc , char *argv[])
             request_log(&sc->request_player2, "Request ", __FUNCTION__, __LINE__);
             mc_apply_request(mc, mc->player2, &sc->request_player2);
         }
-        mc_create_response(mc, 1, sc->request_player1.req_number, &sc->response_player1);
-        mc_create_response(mc, 2, sc->request_player2.req_number, &sc->response_player2);
+        sc_create_responses(sc, mc);
         response_log(&sc->response_player1, "Response", __FUNCTION__, __LINE__);
         response_log(&sc->response_player2, "Response", __FUNCTION__, __LINE__);
-        sc_send_response(sc, 1);
-        sc_send_response(sc, 2);
+        sc_send_responses(sc);
 
         mc_reset_temp_flags(mc);
         mc_process_moving(mc, curr_ticks - prev_ticks);

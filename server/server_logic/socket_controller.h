@@ -7,6 +7,8 @@
 #include<arpa/inet.h> //inet_addr
 #include "response_request.h"
 
+typedef struct tModelController ModelController;
+
 typedef enum eScErrors {
     SC_NO_ERROR,
     SC_RECEIVE_FAILED,
@@ -37,6 +39,8 @@ int sc_accept_player(SocketController *sc, unsigned number);
 
 int sc_receive_request(SocketController *sc, unsigned number_of_player);
 
-int sc_send_response(SocketController *sc, unsigned number_of_player);
+void sc_create_responses(SocketController *sc, ModelController *mc);
+
+int sc_send_responses(SocketController *sc);
 
 int sc_send_start_signal(SocketController *sc, unsigned number_of_player);
