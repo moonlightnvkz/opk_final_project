@@ -3,31 +3,18 @@
 //
 #include <stdlib.h>
 #include <stdio.h>
-#include "response_request.h"
+#include "request_response.h"
 #include "../game_logic/player.h"
 #include "../loggers.h"
 
-RequestStructure *request_create(Player *player, unsigned number)
+void response_set_player_states(PlayerStateResponse *state, Player *player)
 {
-    RequestStructure *req = malloc(sizeof(RequestStructure));
-    if (req == NULL) {
-        log_error("Failed to allocate memory for request", __FUNCTION__, __LINE__);
-        return NULL;
-    }
-    req->req_number = number;
-    req->player_state.velocity.x = player->velocity.x;
-    req->player_state.velocity.y = player->velocity.y;
-    req->player_state.angle = player->angle;
-    req->player_state.position.x = player->geometry.x;
-    req->player_state.position.y = player->geometry.y;
-    req->player_state.shot_done = player->shot_done;
-    player->shot_done = false;
-    return req;
-}
-
-void request_destroy(RequestStructure *req)
-{
-    free(req);
+    state->angle = player->angle;
+    state->shot_done = player->shot_done;
+    state->position.x = player->geometry.x;
+    state->position.y = player->geometry.y;
+    state->velocity.x = player->velocity.x;
+    state->velocity.y = player->velocity.y;
 }
 
 void request_log(RequestStructure *req, char* msg, const char* function, const unsigned line)

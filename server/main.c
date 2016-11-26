@@ -7,7 +7,7 @@
 #include<arpa/inet.h> //inet_addr
 #include<unistd.h>    //write
 #include <SDL_timer.h>
-#include "server_logic/response_request.h"
+#include "server_logic/request_response.h"
 #include "loggers.h"
 #include "game_logic/model_controller.h"
 #include "server_logic/socket_controller.h"

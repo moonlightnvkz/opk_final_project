@@ -6,7 +6,7 @@
 #include "mvc.h"
 #include "player.h"
 #include "bullet.h"
-#include "../server_logic/response_request.h"
+#include "../server_logic/request_response.h"
 #include "../loggers.h"
 #include "../default_values.h"
 
