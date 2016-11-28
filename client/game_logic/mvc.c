@@ -5,7 +5,7 @@
 #include <SDL_image.h>
 #include "mvc.h"
 #include "player.h"
-#include "bullet.h"
+#include "bullets.h"
 #include "../server_logic/request_response.h"
 #include "../loggers.h"
 #include "../default_values.h"
@@ -57,7 +57,7 @@ MVC *mvc_init()
         return NULL;
     }
 
-    mvc->bullets = bullet_create(mvc->renderer);
+    mvc->bullets = bullets_create(mvc->renderer);
     if (mvc->bullets == NULL) {
         log_error("Failed to allocate memory for bullets", __FUNCTION__, __LINE__);
         mvc_destroy(mvc);
@@ -81,7 +81,7 @@ void mvc_destroy(MVC *mvc)
         player_destroy(mvc->diff_player);
     }
     if (mvc->bullets != NULL) {
-        bullet_destroy(mvc->bullets);
+        bullets_destroy(mvc->bullets);
     }
     SDL_Quit();
     IMG_Quit();
@@ -93,7 +93,7 @@ void mvc_render(MVC *mvc)
     SDL_RenderClear(mvc->renderer);
     player_render(mvc->this_player, mvc->renderer);
     player_render(mvc->diff_player, mvc->renderer);
-    bullet_render_all(mvc->bullets, mvc->renderer);
+    bullets_render_all(mvc->bullets, mvc->renderer);
     SDL_RenderPresent(mvc->renderer);
 }
 
@@ -115,35 +115,13 @@ void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
 {
     player_move(mvc->this_player, delta_ticks);
     player_move(mvc->diff_player, delta_ticks);
-    bullet_move_all(mvc->bullets, delta_ticks);
+    bullets_move_all(mvc->bullets, delta_ticks);
 }
 
 void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_response)
 {
-    while (((RequestStructure *) deque_peek_first(requests_list)) != NULL &&
-           ((RequestStructure *) deque_peek_first(requests_list))->req_number < last_response->res_number) {
-        request_destroy((RequestStructure *) deque_remove_first(requests_list));
-    }
-    if (((RequestStructure *) deque_peek_first(requests_list)) == NULL ||
-        ((RequestStructure *) deque_peek_first(requests_list))->req_number != last_response->res_number) {
-        return;
-    }
-    RequestStructure *request = (RequestStructure *) deque_remove_first(requests_list);
+    player_apply_response_this(mvc->this_player, requests_list, last_response);
+    player_apply_response_diff(mvc->diff_player, last_response);
 
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<
-    float dx = request->player_state.position.x - last_response->this_player_state.position.x;
-    float dy = request->player_state.position.y - last_response->this_player_state.position.y;
-    mvc->this_player->geometry.x -= dx;
-    mvc->this_player->geometry.y -= dy;
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>
-
-    player_apply_response_this(mvc->this_player, &last_response->this_player_state);
-    player_apply_response_diff(mvc->diff_player, &last_response->diff_player_state);
-
-    bullet_apply_response(mvc->bullets, &last_response->bullets);
-
-    char msg[50];
-    sprintf(msg, "Req/res positions differs on (%.3f, %.3f)", dx, dy);
-    log_action(msg, __FUNCTION__, __LINE__);
-    request_destroy(request);
+    bullets_apply_response(mvc->bullets, &last_response->bullets);
 }

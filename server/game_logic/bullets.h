@@ -20,10 +20,10 @@ typedef struct tBullets {
     unsigned number;  // Number of active bullets. Memory for all bullets allocates on the start
 } Bullets;
 
-Bullets *bullet_create();
+Bullets *bullets_create();
 
-void bullet_destroy(Bullets *bullets);
+void bullets_destroy(Bullets *bullets);
 
-void bullet_move_all(Bullets *bullets, unsigned delta_ticks);
+void bullets_move_all(Bullets *bullets, unsigned delta_ticks);
 
 void bullet_move(Bullet *bullet, unsigned delta_ticks);

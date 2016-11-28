@@ -5,7 +5,7 @@
 #include <math.h>
 #include "geometry.h"
 
-bool Rect_is_intersects(IntRect rect1, IntRect rect2)
+bool geometry_rect_is_intersects(IntRect rect1, IntRect rect2)
 {
     return !(rect1.x + rect1.width  < rect2.x ||
              rect1.y + rect1.height < rect2.y ||
@@ -13,7 +13,7 @@ bool Rect_is_intersects(IntRect rect1, IntRect rect2)
              rect2.y + rect2.height < rect2.y);
 }
 
-bool Circle_Rect_intersects(IntCircle circle, IntRect rect)
+bool geometry_circle_rect_intersects(IntCircle circle, IntRect rect)
 {
     Vector2i circleDistance;
     circleDistance.x = abs(circle.x - rect.x);

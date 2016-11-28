@@ -6,7 +6,7 @@
 #include <SDL_mouse.h>
 #include <SDL_timer.h>
 #include "player.h"
-#include "bullet.h"
+#include "bullets.h"
 #include "../default_values.h"
 #include "../loggers.h"
 #include "../server_logic/request_response.h"
@@ -16,7 +16,7 @@
 #define M_PI 3.14159265358979323846	/* pi */
 #endif
 
-static void player_move_on(Player *player, float x, float y);
+static void player_move_on(Player *player, float dx, float dy);
 
 static void player_move_to(Player *player, float x, float y);
 
@@ -57,10 +57,28 @@ static void player_move_to(Player *player, float x, float y)
     player->geometry.y = y;
 }
 
-static void player_move_on(Player *player, float x, float y)
+static bool player_collision_check(Player *player, float dx, float dy)
 {
-    player->geometry.x += x;
-    player->geometry.y += y;
+    Vector2f new_pos = {player->geometry.x + dx, player->geometry.y + dy};
+    Vector2i dimensions = {player->geometry.width, player->geometry.height};
+    if (new_pos.x < 0 ||
+        new_pos.y < 0 ||
+        new_pos.x + dimensions.x > WINDOW_WIDTH ||
+        new_pos.y + dimensions.y > WINDOW_HEIGHT)
+    {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+static void player_move_on(Player *player, float dx, float dy)
+{
+    if (!player_collision_check(player, dx, dy)) {
+        return;
+    }
+    player->geometry.x += dx;
+    player->geometry.y += dy;
 }
 
 void player_do_shot(Player *player, Bullets *bullets)

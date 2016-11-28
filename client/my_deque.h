@@ -19,6 +19,10 @@ typedef struct tDeque {
     int _isTuned;
 } Deque;
 
+typedef struct tDequeIterator {
+    Pointer *data;
+} Iterator;
+
 /* Создать пустую очередь */
 void deque_create(Deque *pqueue);
 
@@ -55,3 +59,11 @@ Pointer deque_peek_last(Deque *pqueue);
  *            выделениях памяти
  */
 void deque_tune(Deque *pqueue, size_t initial_size, size_t increment);
+
+Pointer deque_iterator_next(Deque *pqueue, Iterator *it);
+
+Pointer deque_iterator_get_data(Iterator *it);
+
+Iterator *deque_iterator_create(Deque *pqueue);
+
+void deque_iterator_destroy(Iterator *it);

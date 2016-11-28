@@ -5,7 +5,7 @@
 #include <SDL_timer.h>
 #include "model_controller.h"
 #include "player.h"
-#include "bullet.h"
+#include "bullets.h"
 #include "../server_logic/request_response.h"
 #include "../loggers.h"
 #include "../default_values.h"
@@ -32,7 +32,7 @@ ModelController *mc_init()
         return NULL;
     }
 
-    mc->bullets = bullet_create();
+    mc->bullets = bullets_create();
     if (mc->bullets == NULL) {
         log_error("Failed to allocate memory for bullets", __FUNCTION__, __LINE__);
         mc_destroy(mc);
@@ -50,7 +50,7 @@ void mc_destroy(ModelController *mc)
         player_destroy(mc->player2);
     }
     if (mc->bullets != NULL) {
-        bullet_destroy(mc->bullets);
+        bullets_destroy(mc->bullets);
     }
     free(mc);
 }
@@ -59,7 +59,7 @@ void mc_process_moving(ModelController *mc, unsigned delta_ticks)
 {
     player_move(mc->player1, delta_ticks);
     player_move(mc->player2, delta_ticks);
-    bullet_move_all(mc->bullets, delta_ticks);
+    bullets_move_all(mc->bullets, delta_ticks);
 }
 
 void mc_apply_request(ModelController *mc, Player *player, RequestStructure *request)

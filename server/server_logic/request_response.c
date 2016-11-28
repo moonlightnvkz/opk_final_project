@@ -6,7 +6,7 @@
 #include "request_response.h"
 #include "../game_logic/player.h"
 #include "../loggers.h"
-#include "../game_logic/bullet.h"
+#include "../game_logic/bullets.h"
 
 void response_set_player_states(PlayerStateResponse *state, Player *player)
 {

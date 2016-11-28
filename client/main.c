@@ -6,7 +6,6 @@
 #include "server_logic/socket_controller.h"
 #include "game_logic/player.h"
 
-// TODO: shot -> request to the server. response -> rewrite all bullets
 // TODO: collision
 // TODO: kills
 // TODO: bullet reflection

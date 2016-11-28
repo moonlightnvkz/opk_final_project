@@ -23,16 +23,16 @@ typedef struct tBullets {
     SDL_Texture *texture;
 } Bullets;
 
-Bullets *bullet_create(SDL_Renderer *renderer);
+Bullets *bullets_create(SDL_Renderer *renderer);
 
-void bullet_destroy(Bullets *bullets);
+void bullets_destroy(Bullets *bullets);
 
-void bullet_move_all(Bullets *bullets, unsigned delta_ticks);
+void bullets_move_all(Bullets *bullets, unsigned delta_ticks);
 
 void bullet_move(Bullet *bullet, unsigned delta_ticks);
 
-void bullet_render_all(Bullets *bullets, SDL_Renderer *renderer);
+void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer);
 
 void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer);
 
-void bullet_apply_response(Bullets *bullets, BulletsStateResponse *response);
+void bullets_apply_response(Bullets *bullets, BulletsStateResponse *response);

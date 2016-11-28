@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include "bullet.h"
+#include "bullets.h"
 #include "../default_values.h"
 #include "../loggers.h"
 
@@ -12,7 +12,7 @@
 #define M_PI 3.14159265358979323846	/* pi */
 #endif
 
-Bullets *bullet_create()
+Bullets *bullets_create()
 {
     Bullets *bullets = malloc(sizeof(Bullets));
     if (bullets == NULL) {
@@ -31,30 +31,39 @@ Bullets *bullet_create()
     return bullets;
 }
 
-void bullet_destroy(Bullets *bullets)
+void bullets_destroy(Bullets *bullets)
 {
     free(bullets);
 }
 
-static void swap_bullets(Bullet *bullet1, Bullet *bullet2)
+static void bullet_swap(Bullet *bullet1, Bullet *bullet2)
 {
     Bullet temp = *bullet1;
     *bullet1 = *bullet2;
     *bullet2 = temp;
 }
 
-void bullet_move_all(Bullets *bullets, unsigned delta_ticks)
+static bool bullet_need_disactivate(Bullet *bullet) {
+    if (bullet->geometry.x < 0 || bullet->geometry.x > WINDOW_WIDTH ||
+        bullet->geometry.y < 0 || bullet->geometry.y > WINDOW_HEIGHT)
+    {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void bullets_move_all(Bullets *bullets, unsigned delta_ticks)
 {
     for (int i = 0; i < bullets->number; ++i) {
         Bullet *bullet = bullets->bullets + i;
         if (bullet->active == true)
         {
             bullet_move(bullet, delta_ticks);
-            if (bullet->geometry.x < 0 || bullet->geometry.x > WINDOW_WIDTH ||
-                bullet->geometry.y < 0 || bullet->geometry.y > WINDOW_HEIGHT) {
+            if (bullet_need_disactivate(bullet)) {
                 bullet->active = false;
                 bullets->number--;
-                swap_bullets(bullet, bullets->bullets + bullets->number);
+                bullet_swap(bullet, bullets->bullets + bullets->number);
             }
         }
     }

@@ -32,7 +32,7 @@ void deque_destroy(Deque *pdeque)
     free(pdeque->buffer);
     pdeque->buffer = NULL;
     pdeque->buffer_end = pdeque->data_start = pdeque->data_end = 0;
-    pdeque->increment = pdeque->initial_size = pdeque->size = pdeque->_isTuned = 0;
+    pdeque->increment = pdeque->initial_size = pdeque->size =(size_t)(pdeque->_isTuned = 0);
 }
 
 void deque_add_first(Deque *pdeque, Pointer value)
@@ -101,14 +101,12 @@ static int deque_full(Deque *pdeque)
     return (size_t)(pdeque->buffer_end - pdeque->buffer) == pdeque->size;
 }
 
-// FIXED: REALLOC
-
 static void deque_resize(Deque *pdeque, size_t new_size)
 {
     if (pdeque->data_start != pdeque->buffer)
     {
-        int shift = pdeque->data_start - pdeque->buffer;
-        for (int i = shift; i < pdeque->buffer_end - pdeque->buffer; ++i)
+        unsigned long shift = pdeque->data_start - pdeque->buffer;
+        for (unsigned long i = shift; i < pdeque->buffer_end - pdeque->buffer; ++i)
         {
             Pointer t = pdeque->buffer[i - shift];
             pdeque->buffer[i - shift] = pdeque->buffer[i];
@@ -151,4 +149,35 @@ void deque_tune(Deque *pdeque, size_t initial_size, size_t increment)
     pdeque->initial_size = initial_size;
     pdeque->increment = increment;
     pdeque->_isTuned = 1;
+}
+
+Pointer deque_iterator_next(Deque *pqueue, Iterator *it)
+{
+    if (pqueue->size == 0)
+        return NULL;
+    if (it->data == pqueue->data_end - 1) {
+        *it->data = NULL;
+        return NULL;
+    }
+    else
+        it->data++;
+    return *it->data;
+}
+
+Pointer deque_iterator_get_data(Iterator *it) {
+    return *it->data;
+}
+
+Iterator *deque_iterator_create(Deque *pqueue) {
+    Iterator *it = malloc(sizeof(Iterator));
+    if (it == NULL) {
+        fprintf(stderr, "Can't allocate memory for iterator (deque_iterator_create)");
+        exit(1);
+    }
+    it->data = pqueue->data_start;
+    return it;
+}
+
+void deque_iterator_destroy(Iterator *it) {
+    free(it);
 }

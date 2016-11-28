@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include "bullet.h"
+#include "bullets.h"
 #include "../default_values.h"
 #include "../loggers.h"
 #include "sdl_helpers.h"
@@ -14,7 +14,7 @@
 #define M_PI 3.14159265358979323846	/* pi */
 #endif
 
-Bullets *bullet_create(SDL_Renderer *renderer)
+Bullets *bullets_create(SDL_Renderer *renderer)
 {
     Bullets *bullets = malloc(sizeof(Bullets));
     if (bullets == NULL) {
@@ -49,32 +49,41 @@ Bullets *bullet_create(SDL_Renderer *renderer)
     return bullets;
 }
 
-void bullet_destroy(Bullets *bullets)
+void bullets_destroy(Bullets *bullets)
 {
     SDL_DestroyTexture(bullets->texture);
     free(bullets->bullets);
     free(bullets);
 }
 
-static void swap_bullets(Bullet *bullet1, Bullet *bullet2)
+static void bullet_swap(Bullet *bullet1, Bullet *bullet2)
 {
     Bullet temp = *bullet1;
     *bullet1 = *bullet2;
     *bullet2 = temp;
 }
 
-void bullet_move_all(Bullets *bullets, unsigned delta_ticks)
+static bool bullet_need_disactivate(Bullet *bullet) {
+    if (bullet->geometry.x < 0 || bullet->geometry.x > WINDOW_WIDTH ||
+        bullet->geometry.y < 0 || bullet->geometry.y > WINDOW_HEIGHT)
+    {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void bullets_move_all(Bullets *bullets, unsigned delta_ticks)
 {
     for (int i = 0; i < bullets->number; ++i) {
         Bullet *bullet = bullets->bullets + i;
         if (bullet->active == true)
         {
             bullet_move(bullet, delta_ticks);
-            if (bullet->geometry.x < 0 || bullet->geometry.x > WINDOW_WIDTH ||
-                bullet->geometry.y < 0 || bullet->geometry.y > WINDOW_HEIGHT) {
+            if (bullet_need_disactivate(bullet)) {
                 bullet->active = false;
                 bullets->number--;
-                swap_bullets(bullet, bullets->bullets + bullets->number);
+                bullet_swap(bullet, bullets->bullets + bullets->number);
             }
         }
     }
@@ -99,7 +108,7 @@ void bullet_move(Bullet *bullet, unsigned delta_ticks)
     }
 }
 
-void bullet_render_all(Bullets *bullets, SDL_Renderer *renderer)
+void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer)
 {
     for (int i = 0; i < bullets->number; ++i) {
         Bullet *bullet = bullets->bullets + i;
@@ -120,13 +129,9 @@ void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer)
                       bullet->angle);
 }
 
-void bullet_apply_response(Bullets *bullets, BulletsStateResponse *response)
+void bullets_apply_response(Bullets *bullets, BulletsStateResponse *response)
 {
     bullets->number = response->number;
-//    bullets->bullets[0].active = response->bullets.active;
-//    bullets->bullets[0].angle = response->bullets.angle;
-//    bullets->bullets[0].geometry.x = response->bullets.position.x;
-//    bullets->bullets[0].geometry.y = response->bullets.position.y;
     for (unsigned i = 0; i < bullets->number; ++i) {
         Bullet *bullet = &bullets->bullets[i];
         BulletStateResponse *bulletStateResponse = &response->bullets[i];
