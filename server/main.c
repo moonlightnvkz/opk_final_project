@@ -2,10 +2,7 @@
     C socket server example
 */
 
-#include<stdio.h>
-#include<sys/socket.h>
-#include<arpa/inet.h> //inet_addr
-#include<unistd.h>    //write
+#include <arpa/inet.h> //inet_addr
 #include <SDL_timer.h>
 #include "server_logic/request_response.h"
 #include "loggers.h"

@@ -140,10 +140,6 @@ void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_
     player_apply_response_this(mvc->this_player, &last_response->this_player_state);
     player_apply_response_diff(mvc->diff_player, &last_response->diff_player_state);
 
-//    if (mvc->diff_player->shot_done == true) {
-//        player_do_shot(mvc->diff_player, mvc->bullets);
-//    }
-
     bullet_apply_response(mvc->bullets, &last_response->bullets);
 
     char msg[50];

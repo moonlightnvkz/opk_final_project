@@ -6,7 +6,6 @@
 #include <unistd.h>    //close
 #include <SDL_timer.h>
 #include "socket_controller.h"
-#include "../default_values.h"
 #include "../game_logic/player.h"
 #include "../loggers.h"
 
@@ -109,14 +108,13 @@ int sc_receive_current_state(SocketController *sc) {
         return SC_CONNECTION_CLOSED;
     }
     left_to_receive -= res;
-    // <<<<<<<<<<< FOR DEBUG <<<<<<<<<<<<<<<<<<
+
     if (left_to_receive < 0) {
         log_error("Left to receive is bellow zero", __FUNCTION__, __LINE__);
         return SC_RECEIVE_FAILED;
     }
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     if (left_to_receive > 0) {
-        log_error("<<<<<<<<<<<<<<<<<<<<<", __FUNCTION__, __LINE__);
         return SC_PARTIAL_RECEIVE;
     }
     left_to_receive = sizeof(ResponseStructure);
