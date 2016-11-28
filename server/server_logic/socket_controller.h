@@ -41,6 +41,6 @@ int sc_receive_request(SocketController *sc, unsigned number_of_player);
 
 void sc_create_responses(SocketController *sc, ModelController *mc);
 
-int sc_send_responses(SocketController *sc);
+int sc_send_response(SocketController *sc, unsigned player_number);
 
 int sc_send_start_signal(SocketController *sc, unsigned number_of_player);

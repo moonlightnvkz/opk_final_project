@@ -8,6 +8,9 @@
 #include <SDL_system.h>
 #include "geometry.h"
 
+typedef struct tBulletsStateResponse BulletsStateResponse;
+
+
 typedef struct tBullet {
     ObjectGeometry geometry;
     double angle;   // Velocity is the same for all bullets. Calculates according to the angle;
@@ -31,3 +34,5 @@ void bullet_move(Bullet *bullet, unsigned delta_ticks);
 void bullet_render_all(Bullets *bullets, SDL_Renderer *renderer);
 
 void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer);
+
+void bullet_apply_response(Bullets *bullets, BulletsStateResponse *response);

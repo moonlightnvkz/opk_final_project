@@ -86,27 +86,20 @@ int sc_send_current_state(SocketController *sc, Player *player)
     deque_add_last(&sc->requests_list, (Pointer) req);
 
     last_send_time = SDL_GetTicks();
-    return sc_send_data_to_the_server(sc, req, sizeof(RequestStructure));
+    if (send(sc->sock, req, sizeof(RequestStructure), MSG_DONTWAIT) < 0) {
+        log_error("Send failed", __FUNCTION__, __LINE__);
+        return SC_SEND_FAILED;
+    }
+    request_log(req, "Send", __FUNCTION__, __LINE__);
+    return SC_NO_ERROR;
 }
 
 // @return:
 // 0 - all is Ok
 // 1 - failed to receive
 int sc_receive_current_state(SocketController *sc) {
-    return sc_receive_reply_from_the_server(sc, &sc->last_response, sizeof(ResponseStructure));
-}
-
-int sc_send_data_to_the_server(SocketController *sc, RequestStructure *request, size_t size) {
-    if (send(sc->sock, request, size, MSG_DONTWAIT) < 0) {
-        log_error("Send failed", __FUNCTION__, __LINE__);
-        return SC_SEND_FAILED;
-    }
-    request_log(request, "Send", __FUNCTION__, __LINE__);
-    return SC_NO_ERROR;
-}
-
-int sc_receive_reply_from_the_server(SocketController *sc, ResponseStructure *reply, size_t size) {
-    ssize_t res = recv(sc->sock, reply, size, MSG_DONTWAIT);
+    static ssize_t left_to_receive = sizeof(ResponseStructure);
+    ssize_t res = recv(sc->sock, &sc->last_response, sizeof(ResponseStructure), MSG_DONTWAIT);
     if (res == -1) {
         log_error("Receive failed", __FUNCTION__, __LINE__);
         return SC_RECEIVE_FAILED;
@@ -115,7 +108,19 @@ int sc_receive_reply_from_the_server(SocketController *sc, ResponseStructure *re
         log_error("Connection closed", __FUNCTION__, __LINE__);
         return SC_CONNECTION_CLOSED;
     }
-    response_log(reply, "Recv", __FUNCTION__, __LINE__);
+    left_to_receive -= res;
+    // <<<<<<<<<<< FOR DEBUG <<<<<<<<<<<<<<<<<<
+    if (left_to_receive < 0) {
+        log_error("Left to receive is bellow zero", __FUNCTION__, __LINE__);
+        return SC_RECEIVE_FAILED;
+    }
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    if (left_to_receive > 0) {
+        log_error("<<<<<<<<<<<<<<<<<<<<<", __FUNCTION__, __LINE__);
+        return SC_PARTIAL_RECEIVE;
+    }
+    left_to_receive = sizeof(ResponseStructure);
+    response_log(&sc->last_response, "Recv", __FUNCTION__, __LINE__);
     return SC_NO_ERROR;
 }
 

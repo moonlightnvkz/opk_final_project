@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <SDL_system.h>
 #include "geometry.h"
+#include "../default_values.h"
 
 typedef struct tBullet {
     ObjectGeometry geometry;
@@ -15,7 +16,7 @@ typedef struct tBullet {
 } Bullet;
 
 typedef struct tBullets {
-    Bullet *bullets;
+    Bullet bullets[BULLET_MAX_AMOUNT];
     unsigned number;  // Number of active bullets. Memory for all bullets allocates on the start
 } Bullets;
 

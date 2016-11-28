@@ -8,6 +8,7 @@
 #include "../default_values.h"
 #include "../loggers.h"
 #include "sdl_helpers.h"
+#include "../server_logic/request_response.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
@@ -117,4 +118,21 @@ void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer)
                       bullet->geometry.width,
                       bullet->geometry.height,
                       bullet->angle);
+}
+
+void bullet_apply_response(Bullets *bullets, BulletsStateResponse *response)
+{
+    bullets->number = response->number;
+//    bullets->bullets[0].active = response->bullets.active;
+//    bullets->bullets[0].angle = response->bullets.angle;
+//    bullets->bullets[0].geometry.x = response->bullets.position.x;
+//    bullets->bullets[0].geometry.y = response->bullets.position.y;
+    for (unsigned i = 0; i < bullets->number; ++i) {
+        Bullet *bullet = &bullets->bullets[i];
+        BulletStateResponse *bulletStateResponse = &response->bullets[i];
+        bullet->active = bulletStateResponse->active;
+        bullet->angle = bulletStateResponse->angle;
+        bullet->geometry.x = bulletStateResponse->position.x;
+        bullet->geometry.y = bulletStateResponse->position.y;
+    }
 }

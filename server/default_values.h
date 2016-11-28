@@ -15,7 +15,7 @@
 #define PLAYER_FIRE_RATE            5   // Shots per second
 
 #define BULLET_VELOCITY             600
-#define BULLET_MAX_AMOUNT           20  // Per player
+#define BULLET_MAX_AMOUNT           40  // For both players
 #define BULLET_WIDTH                12
 #define BULLET_HIEGHT               20
 

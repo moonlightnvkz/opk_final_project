@@ -130,22 +130,31 @@ ResponseStructure *get_player_response_by_number(SocketController *sc, unsigned 
 
 void sc_create_responses(SocketController *sc, ModelController *mc)
 {
+    sc->response_player1.res_number = sc->request_player1.req_number;
     response_set_player_states(&sc->response_player1.this_player_state, mc->player1);
     response_set_player_states(&sc->response_player1.diff_player_state, mc->player2);
+    response_set_bullets_states(&sc->response_player1.bullets, mc->bullets);
+
+    sc->response_player2.res_number = sc->request_player2.req_number;
     response_set_player_states(&sc->response_player2.this_player_state, mc->player2);
     response_set_player_states(&sc->response_player2.diff_player_state, mc->player1);
+    response_set_bullets_states(&sc->response_player2.bullets, mc->bullets);
 }
 
-int sc_send_responses(SocketController *sc)
+int sc_send_response(SocketController *sc, unsigned player_number)
 {
-    if(send(sc->socket_player1, &sc->response_player1, sizeof(ResponseStructure), MSG_DONTWAIT) < 0)
-    {
-        log_error("Send failed (player 1)", __FUNCTION__, __LINE__);
-        return SC_SEND_FAILED;
+    if (player_number != 1 && player_number != 2) {
+        log_error("Unsupported player", __FUNCTION__, __LINE__);
+        return SC_UNSUPPORTED_PLAYER;
     }
-    if(send(sc->socket_player2, &sc->response_player2, sizeof(ResponseStructure), MSG_DONTWAIT) < 0)
+    int               *socket   = get_player_socket_by_number(sc, player_number);
+    ResponseStructure *response = get_player_response_by_number(sc, player_number);
+    if(send(*socket, response, sizeof(ResponseStructure), MSG_DONTWAIT) < sizeof(ResponseStructure))
     {
-        log_error("Send failed (player 2)", __FUNCTION__, __LINE__);
+        puts("1");
+        char msg[50];
+        sprintf(msg, "Send failed (player %d)", player_number);
+        log_error(msg, __FUNCTION__, __LINE__);
         return SC_SEND_FAILED;
     }
     return SC_NO_ERROR;

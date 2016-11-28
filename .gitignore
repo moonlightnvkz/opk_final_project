@@ -6,3 +6,6 @@ CMakeLists.txt
 
 # Copy of the client for test multiplayer part
 client_copy/
+
+# Log files
+*.log

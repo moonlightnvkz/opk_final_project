@@ -64,8 +64,9 @@ int main(int argc , char *argv[])
             log_error("Connection closed", __FUNCTION__, __LINE__);
             break;
         }
-
-        mvc_apply_response(mvc, &socketController->requests_list, &socketController->last_response);
+        if (res == SC_NO_ERROR) {
+            mvc_apply_response(mvc, &socketController->requests_list, &socketController->last_response);
+        }
 
         mvc_render(mvc);
 

@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 #include "../game_logic/geometry.h"
+#include "../default_values.h"
 
 typedef struct tPlayer Player;
 
@@ -27,13 +28,24 @@ typedef struct tPlayerStateResponse {
     double angle;
     Vector2f position;
     Vector2i velocity;
-    bool shot_done;
 } PlayerStateResponse;
+
+typedef struct tBulletStateResponse {
+    Vector2f position;
+    double angle;
+    bool active;
+} BulletStateResponse;
+
+typedef struct tBulletsStateResponse {
+    BulletStateResponse bullets[BULLET_MAX_AMOUNT];
+    unsigned number;
+} BulletsStateResponse;
 
 typedef struct tResponseStructure {
     unsigned res_number;
     PlayerStateResponse this_player_state;
     PlayerStateResponse diff_player_state;
+    BulletsStateResponse bullets;
 } ResponseStructure;
 #pragma pack(pop)
 

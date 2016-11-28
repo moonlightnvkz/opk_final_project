@@ -9,6 +9,7 @@
 #include "geometry.h"
 
 typedef struct tBullets Bullets;
+typedef struct tPlayerStateResponse PlayerStateResponse;
 
 typedef struct tPlayer {
     ObjectGeometry geometry;
@@ -30,3 +31,7 @@ void player_move(Player *player, unsigned delta_ticks);
 void player_render(Player *player, SDL_Renderer *renderer);
 
 void player_do_shot(Player *player, Bullets *bullets);
+
+void player_apply_response_this(Player *player, PlayerStateResponse *response);
+
+void player_apply_response_diff(Player *player, PlayerStateResponse *response);

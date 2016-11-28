@@ -10,7 +10,7 @@ static FILE* log_file;
 
 int logger_init()
 {
-    log_file = fopen("log", "w");
+    log_file = fopen("log.log", "w");
     if (!log_file) {
         return 1;
     } else {

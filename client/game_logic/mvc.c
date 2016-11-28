@@ -129,19 +129,23 @@ void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_
         return;
     }
     RequestStructure *request = (RequestStructure *) deque_remove_first(requests_list);
+
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<
     float dx = request->player_state.position.x - last_response->this_player_state.position.x;
     float dy = request->player_state.position.y - last_response->this_player_state.position.y;
     mvc->this_player->geometry.x -= dx;
     mvc->this_player->geometry.y -= dy;
-    mvc->diff_player->geometry.x = last_response->diff_player_state.position.x;
-    mvc->diff_player->geometry.y = last_response->diff_player_state.position.y;
-    mvc->diff_player->velocity.x = last_response->diff_player_state.velocity.x;
-    mvc->diff_player->velocity.y = last_response->diff_player_state.velocity.y;
-    mvc->diff_player->angle = last_response->diff_player_state.angle;
-    mvc->diff_player->shot_done = last_response->diff_player_state.shot_done;
-    if (mvc->diff_player->shot_done == true) {
-        player_do_shot(mvc->diff_player, mvc->bullets);
-    }
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    player_apply_response_this(mvc->this_player, &last_response->this_player_state);
+    player_apply_response_diff(mvc->diff_player, &last_response->diff_player_state);
+
+//    if (mvc->diff_player->shot_done == true) {
+//        player_do_shot(mvc->diff_player, mvc->bullets);
+//    }
+
+    bullet_apply_response(mvc->bullets, &last_response->bullets);
+
     char msg[50];
     sprintf(msg, "Req/res positions differs on (%.3f, %.3f)", dx, dy);
     log_action(msg, __FUNCTION__, __LINE__);

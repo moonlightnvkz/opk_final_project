@@ -19,12 +19,6 @@ Bullets *bullet_create()
         log_error("Failed to allocate memory for bullets struct", __FUNCTION__, __LINE__);
         return NULL;
     }
-    bullets->bullets = malloc(sizeof(Bullet) * BULLET_MAX_AMOUNT);
-    if (bullets->bullets == NULL) {
-        log_error("Failed to allocate memory for bullets array", __FUNCTION__, __LINE__);
-        free(bullets);
-        return NULL;
-    }
 
     bullets->number = 0;
     for (size_t i = 0; i < BULLET_MAX_AMOUNT; ++i) {
@@ -39,7 +33,6 @@ Bullets *bullet_create()
 
 void bullet_destroy(Bullets *bullets)
 {
-    free(bullets->bullets);
     free(bullets);
 }
 

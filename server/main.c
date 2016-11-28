@@ -43,7 +43,7 @@ int main(int argc , char *argv[])
             break;
         }
         if (res == SC_NO_ERROR) {
-            request_log(&sc->request_player1, "Request ", __FUNCTION__, __LINE__);
+            request_log(&sc->request_player1, "Request 1", __FUNCTION__, __LINE__);
             mc_apply_request(mc, mc->player1, &sc->request_player1);
         }
 
@@ -52,13 +52,14 @@ int main(int argc , char *argv[])
             break;
         }
         if (res == SC_NO_ERROR) {
-            request_log(&sc->request_player2, "Request ", __FUNCTION__, __LINE__);
+            request_log(&sc->request_player2, "Request 2", __FUNCTION__, __LINE__);
             mc_apply_request(mc, mc->player2, &sc->request_player2);
         }
         sc_create_responses(sc, mc);
-        response_log(&sc->response_player1, "Response", __FUNCTION__, __LINE__);
-        response_log(&sc->response_player2, "Response", __FUNCTION__, __LINE__);
-        sc_send_responses(sc);
+        response_log(&sc->response_player1, "Response 1", __FUNCTION__, __LINE__);
+        response_log(&sc->response_player2, "Response 2", __FUNCTION__, __LINE__);
+        sc_send_response(sc, 1);
+        sc_send_response(sc, 2);
 
         mc_reset_temp_flags(mc);
         mc_process_moving(mc, curr_ticks - prev_ticks);

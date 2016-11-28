@@ -10,6 +10,7 @@
 #include "sdl_helpers.h"
 #include "../default_values.h"
 #include "../loggers.h"
+#include "../server_logic/request_response.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
@@ -124,4 +125,16 @@ void player_do_shot(Player *player, Bullets *bullets)
     bullets->bullets[bullets->number].active = true;
     bullets->number++;
     player->last_shot_time = time;
+}
+
+void player_apply_response_this(Player *player, PlayerStateResponse *response) {
+    return;
+}
+
+void player_apply_response_diff(Player *player, PlayerStateResponse *response) {
+    player->angle = response->angle;
+    player->geometry.x = response->position.x;
+    player->geometry.y = response->position.y;
+    player->velocity.x = response->velocity.x;
+    player->velocity.y = response->velocity.y;
 }

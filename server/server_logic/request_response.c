@@ -6,15 +6,32 @@
 #include "request_response.h"
 #include "../game_logic/player.h"
 #include "../loggers.h"
+#include "../game_logic/bullet.h"
 
 void response_set_player_states(PlayerStateResponse *state, Player *player)
 {
     state->angle = player->angle;
-    state->shot_done = player->shot_done;
     state->position.x = player->geometry.x;
     state->position.y = player->geometry.y;
     state->velocity.x = player->velocity.x;
     state->velocity.y = player->velocity.y;
+}
+
+void response_set_bullets_states(BulletsStateResponse *state, Bullets *bullets)
+{
+    state->number = bullets->number;
+//    state->bullets.active = bullets->bullets[0].active;
+//    state->bullets.angle = bullets->bullets[0].angle;
+//    state->bullets.position.x = bullets->bullets[0].geometry.x;
+//    state->bullets.position.y = bullets->bullets[0].geometry.y;
+    for (unsigned i = 0; i < bullets->number; ++i) {
+        BulletStateResponse *bulletStateResponse = &state->bullets[i];
+        Bullet *bullet = &bullets->bullets[i];
+        bulletStateResponse->active = bullet->active;
+        bulletStateResponse->angle = bullet->angle;
+        bulletStateResponse->position.x = bullet->geometry.x;
+        bulletStateResponse->position.y = bullet->geometry.y;
+    }
 }
 
 void request_log(RequestStructure *req, char* msg, const char* function, const unsigned line)
@@ -35,7 +52,7 @@ void request_log(RequestStructure *req, char* msg, const char* function, const u
 void response_log(ResponseStructure *res, char* msg, const char* function, const unsigned line)
 {
     char buf[200] = {'\0'};
-    sprintf(buf, "%s:%d|%lf, %f, %f, %d, %d, %d|%lf, %f, %f, %d, %d, %d",
+    sprintf(buf, "%s:%d|%lf, %f, %f, %d, %d|%lf, %f, %f, %d, %d|%d",
             msg,
             res->res_number,
             res->this_player_state.angle,
@@ -43,12 +60,11 @@ void response_log(ResponseStructure *res, char* msg, const char* function, const
             res->this_player_state.position.y,
             res->this_player_state.velocity.x,
             res->this_player_state.velocity.y,
-            res->this_player_state.shot_done,
             res->diff_player_state.angle,
             res->diff_player_state.position.x,
             res->diff_player_state.position.y,
             res->diff_player_state.velocity.x,
             res->diff_player_state.velocity.y,
-            res->diff_player_state.shot_done);
+            res->bullets.number);
     log_action(buf, function, line);
 }
