@@ -12,6 +12,7 @@
 #include "../loggers.h"
 #include "../server_logic/request_response.h"
 #include "../my_deque.h"
+#include "camera.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
@@ -71,6 +72,7 @@ static void player_move_to(Player *player, float x, float y)
 
 static bool player_collision_check(Player *player, float dx, float dy)
 {
+    return true;
     Vector2f new_pos = {player->geometry.x + dx, player->geometry.y + dy};
     Vector2i dimensions = {player->geometry.width, player->geometry.height};
     if (new_pos.x < 0 ||
@@ -93,11 +95,18 @@ static void player_move_on(Player *player, float dx, float dy)
     player->geometry.y += dy;
 }
 
-void player_render(Player *player, SDL_Renderer *renderer)
+Vector2f player_get_relative_position(Player *player, Camera *camera)
 {
+    Vector2f rel_pos = {player->geometry.x - camera->geometry.x, player->geometry.y - camera->geometry.y};
+    return rel_pos;
+}
+
+void player_render(Player *player, SDL_Renderer *renderer, Camera *camera)
+{
+    Vector2f rel_pos = player_get_relative_position(player, camera);
     render_texture_ex(player->texture, renderer,
-                   (int)player->geometry.x,(int)player->geometry.y,
-                        player->geometry.width, player->geometry.height, player->angle);
+                      (int)rel_pos.x,(int)rel_pos.y,
+                      player->geometry.width, player->geometry.height, player->angle);
 }
 
 // delta_time in milliseconds
@@ -120,11 +129,15 @@ void player_keystates_process(Player *player, const Uint8 *keystates)
     {
         player->velocity.x += PLAYER_VELOCITY;
     }
+}
 
+void player_angle_process(Player *player, Camera *camera)
+{
     int mouse_x, mouse_y;
+    Vector2f rel_pos = player_get_relative_position(player, camera);
     SDL_GetMouseState(&mouse_x, &mouse_y);
-    double x = mouse_x - player->geometry.x - player->geometry.width / 2.0;
-    double y = mouse_y - player->geometry.y - player->geometry.height / 2.0;
+    double x = mouse_x - rel_pos.x - player->geometry.width / 2.0;
+    double y = mouse_y - rel_pos.y - player->geometry.height / 2.0;
     player->angle = (int)(atan2(y, x) / M_PI * 180) + 90;
 }
 

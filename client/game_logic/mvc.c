@@ -9,6 +9,7 @@
 #include "../server_logic/request_response.h"
 #include "../loggers.h"
 #include "../default_values.h"
+#include "camera.h"
 
 MVC *mvc_init()
 {
@@ -40,6 +41,14 @@ MVC *mvc_init()
                                    SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (mvc->renderer == NULL) {
         log_error(SDL_GetError(), __FUNCTION__, __LINE__);
+        mvc_destroy(mvc);
+        return NULL;
+    }
+
+    mvc->camera = camera_create();
+
+    if (mvc->camera == NULL) {
+        log_error("Failed  to allocate memory for camera", __FUNCTION__, __LINE__);
         mvc_destroy(mvc);
         return NULL;
     }
@@ -83,6 +92,9 @@ void mvc_destroy(MVC *mvc)
     if (mvc->bullets != NULL) {
         bullets_destroy(mvc->bullets);
     }
+    if (mvc->camera != NULL) {
+        camera_destroy(mvc->camera);
+    }
     SDL_Quit();
     IMG_Quit();
     free(mvc);
@@ -91,9 +103,9 @@ void mvc_destroy(MVC *mvc)
 void mvc_render(MVC *mvc)
 {
     SDL_RenderClear(mvc->renderer);
-    player_render(mvc->this_player, mvc->renderer);
-    player_render(mvc->diff_player, mvc->renderer);
-    bullets_render_all(mvc->bullets, mvc->renderer);
+    player_render(mvc->this_player, mvc->renderer, mvc->camera);
+    player_render(mvc->diff_player, mvc->renderer, mvc->camera);
+    bullets_render_all(mvc->bullets, mvc->renderer, mvc->camera);
     SDL_RenderPresent(mvc->renderer);
 }
 
@@ -102,6 +114,8 @@ int mvc_process_key(MVC *mvc, const Uint8 *keystates)
     if (keystates[SDL_SCANCODE_ESCAPE]) {
         return MVC_EXIT_KEY_PRESSED;
     }
+
+    player_angle_process(mvc->this_player, mvc->camera);
 
     player_keystates_process(mvc->this_player, keystates);
 
@@ -116,6 +130,8 @@ void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
     player_move(mvc->this_player, delta_ticks);
     player_move(mvc->diff_player, delta_ticks);
     bullets_move_all(mvc->bullets, delta_ticks);
+
+    camera_move_after_the_player(mvc->camera, mvc->this_player);
 }
 
 void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_response)

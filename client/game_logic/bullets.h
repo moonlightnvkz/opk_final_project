@@ -9,7 +9,7 @@
 #include "geometry.h"
 
 typedef struct tBulletsStateResponse BulletsStateResponse;
-
+typedef struct tCamera Camera;
 
 typedef struct tBullet {
     ObjectGeometry geometry;
@@ -31,8 +31,8 @@ void bullets_move_all(Bullets *bullets, unsigned delta_ticks);
 
 void bullet_move(Bullet *bullet, unsigned delta_ticks);
 
-void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer);
+void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer, Camera *camera);
 
-void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer);
+void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer, Camera *camera);
 
 void bullets_apply_response(Bullets *bullets, BulletsStateResponse *response);

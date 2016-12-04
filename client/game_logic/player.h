@@ -11,6 +11,7 @@
 typedef struct tBullets Bullets;
 typedef struct tResponseStructure ResponseStructure;
 typedef struct tDeque Deque;
+typedef struct tCamera Camera;
 
 typedef struct tPlayer {
     ObjectGeometry geometry;
@@ -27,9 +28,11 @@ void player_destroy(Player *player);
 
 void player_keystates_process(Player *player, const Uint8 *keystates);
 
+void player_angle_process(Player *player, Camera *camera);
+
 void player_move(Player *player, unsigned delta_ticks);
 
-void player_render(Player *player, SDL_Renderer *renderer);
+void player_render(Player *player, SDL_Renderer *renderer, Camera *camera);
 
 void player_do_shot(Player *player, Bullets *bullets);
 

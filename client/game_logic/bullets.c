@@ -9,6 +9,7 @@
 #include "../loggers.h"
 #include "sdl_helpers.h"
 #include "../server_logic/request_response.h"
+#include "camera.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
@@ -108,19 +109,26 @@ void bullet_move(Bullet *bullet, unsigned delta_ticks)
     }
 }
 
-void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer)
+void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer, Camera *camera)
 {
     for (int i = 0; i < bullets->number; ++i) {
         Bullet *bullet = bullets->bullets + i;
         if (bullet->active == true)
         {
-            bullet_render(bullet, bullets->texture, renderer);
+            bullet_render(bullet, bullets->texture, renderer, camera);
         }
     }
 }
 
-void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer)
+Vector2f bullet_get_relative_position(Bullet *bullet, Camera *camera)
 {
+    Vector2f rel_pos = {bullet->geometry.x - camera->geometry.x, bullet->geometry.y - camera->geometry.y};
+    return rel_pos;
+}
+
+void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer, Camera *camera)
+{
+    Vector2f rel_pos = bullet_get_relative_position(bullet, camera);
     render_texture_ex(texture, renderer,
                       (int)bullet->geometry.x,
                       (int)bullet->geometry.y,

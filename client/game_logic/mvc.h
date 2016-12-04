@@ -10,6 +10,7 @@
 typedef struct tPlayer Player;
 typedef struct tBullets Bullets;
 typedef struct tResponseStructure ResponseStructure;
+typedef struct tCamera Camera;
 
 typedef enum eMvcReturnCodes {
     MVC_NO_ERRORS,
@@ -20,6 +21,7 @@ typedef enum eMvcReturnCodes {
 typedef struct tMVC {
     SDL_Window *window;
     SDL_Renderer *renderer;
+    Camera *camera;
 
     Player *this_player;
     Player *diff_player;

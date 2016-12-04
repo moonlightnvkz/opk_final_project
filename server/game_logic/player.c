@@ -59,6 +59,7 @@ static void player_move_to(Player *player, float x, float y)
 
 static bool player_collision_check(Player *player, float dx, float dy)
 {
+    return true;
     Vector2f new_pos = {player->geometry.x + dx, player->geometry.y + dy};
     Vector2i dimensions = {player->geometry.width, player->geometry.height};
     if (new_pos.x < 0 ||

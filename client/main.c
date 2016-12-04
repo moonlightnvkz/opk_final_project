@@ -6,10 +6,14 @@
 #include "server_logic/socket_controller.h"
 #include "game_logic/player.h"
 
-// TODO: collision
+// TODO: collision - DONE: players are now limited in space to window borders
+// TODO: this/diff response -> [2]response, number of player sended at the start
+// TODO: change renderer to surface
 // TODO: kills
 // TODO: bullet reflection
-// TODO: EXPLOSIONS!!!
+// TODO: static items with collision
+// TODO: big map with small view + arrows pointing to other player(s)
+// TODO: EXPLOSIONS!!! (barrels)
 
 int main(int argc , char *argv[])
 {
