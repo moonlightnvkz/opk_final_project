@@ -9,3 +9,6 @@ client_copy/
 
 # Log files
 *.log
+
+# Notes
+*.ignore

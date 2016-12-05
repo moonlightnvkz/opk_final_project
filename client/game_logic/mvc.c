@@ -10,6 +10,7 @@
 #include "../loggers.h"
 #include "../default_values.h"
 #include "camera.h"
+#include "tile_map.h"
 
 MVC *mvc_init()
 {
@@ -25,7 +26,7 @@ MVC *mvc_init()
 
     MVC *mvc = malloc(sizeof(MVC));
     if (mvc == NULL) {
-        log_error("Failed to allocate memory for gameView", __FUNCTION__, __LINE__);
+        log_error("Failed to create gameView", __FUNCTION__, __LINE__);
         mvc_destroy(mvc);
         return NULL;
     }
@@ -48,27 +49,34 @@ MVC *mvc_init()
     mvc->camera = camera_create();
 
     if (mvc->camera == NULL) {
-        log_error("Failed  to allocate memory for camera", __FUNCTION__, __LINE__);
+        log_error("Failed  to create camera", __FUNCTION__, __LINE__);
         mvc_destroy(mvc);
         return NULL;
     }
 
+    mvc->map = tilemap_create(mvc->renderer);
+
+    if (mvc->map == NULL) {
+        log_error("Failed to create map", __FUNCTION__, __LINE__);
+        mvc_destroy(mvc);
+        return NULL;
+    }
     mvc->this_player = player_create(mvc->renderer);
     if (mvc->this_player == NULL) {
-        log_error("Failed to allocate memory for this_player", __FUNCTION__, __LINE__);
+        log_error("Failed to create this_player", __FUNCTION__, __LINE__);
         mvc_destroy(mvc);
         return NULL;
     }
     mvc->diff_player = player_create(mvc->renderer);
     if (mvc->diff_player == NULL) {
-        log_error("Failed to allocate memory for diff_player", __FUNCTION__, __LINE__);
+        log_error("Failed to create diff_player", __FUNCTION__, __LINE__);
         mvc_destroy(mvc);
         return NULL;
     }
 
     mvc->bullets = bullets_create(mvc->renderer);
     if (mvc->bullets == NULL) {
-        log_error("Failed to allocate memory for bullets", __FUNCTION__, __LINE__);
+        log_error("Failed to create bullets", __FUNCTION__, __LINE__);
         mvc_destroy(mvc);
         return NULL;
     }
@@ -85,6 +93,9 @@ void mvc_destroy(MVC *mvc)
     }
     if (mvc->this_player != NULL) {
         player_destroy(mvc->this_player);
+    }
+    if (mvc->map != NULL) {
+        tilemap_destroy(mvc->map);
     }
     if (mvc->diff_player != NULL) {
         player_destroy(mvc->diff_player);
@@ -103,6 +114,7 @@ void mvc_destroy(MVC *mvc)
 void mvc_render(MVC *mvc)
 {
     SDL_RenderClear(mvc->renderer);
+    tilemap_render(mvc->map, mvc->renderer, mvc->camera);
     player_render(mvc->this_player, mvc->renderer, mvc->camera);
     player_render(mvc->diff_player, mvc->renderer, mvc->camera);
     bullets_render_all(mvc->bullets, mvc->renderer, mvc->camera);

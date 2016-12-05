@@ -7,8 +7,11 @@
 #define WINDOW_WIDTH                640
 #define WINDOW_HEIGHT               480
 
-#define PLAYER_X                    WINDOW_WIDTH / 10
-#define PLAYER_Y                    WINDOW_HEIGHT / 10
+#define MAP_WIDTH                   1000
+#define MAP_HEIGHT                  1000
+
+#define PLAYER_X                    400
+#define PLAYER_Y                    400
 #define PLAYER_WIDTH                50
 #define PLAYER_HEIGHT               35
 #define PLAYER_VELOCITY             600
@@ -18,10 +21,7 @@
 #define BULLET_MAX_AMOUNT           40  // For both players
 #define BULLET_WIDTH                12
 #define BULLET_HIEGHT               20
-
-#define PLAYER_TEXTURE              "res/player_texture.png"
-#define BULLET_TEXTURE              "res/bullet_texture.png"
-#define MISSING_TEXTURE             "res/missing_texture.png"
+#define BULLET_TTL                  400
 
 #define SERVER_IP                   "127.0.0.1"
 #define SERVER_PORT                 8888

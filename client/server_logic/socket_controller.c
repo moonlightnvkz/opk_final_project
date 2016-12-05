@@ -34,6 +34,13 @@ SocketController *sc_init()
     sc->last_response.res_number = 0;
     sc->last_response.this_player_state.position.x = sc->last_response.this_player_state.position.y = 0;
     sc->last_response.this_player_state.angle = 0;
+    sc->last_response.bullets.number = 0;
+    for (int i = 0; i < BULLET_MAX_AMOUNT; ++i) {
+        BulletStateResponse *bullet = &sc->last_response.bullets.bullets[i];
+        bullet->angle = 0.0;
+        bullet->position.x = bullet->position.y = 0;
+        bullet->ttl = 0;
+    }
     return sc;
 }
 void sc_destroy(SocketController *sc)

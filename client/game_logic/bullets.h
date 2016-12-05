@@ -14,7 +14,7 @@ typedef struct tCamera Camera;
 typedef struct tBullet {
     ObjectGeometry geometry;
     double angle;   // Velocity is the same for all bullets. Calculates according to the angle;
-    bool active;
+    int ttl;
 } Bullet;
 
 typedef struct tBullets {
@@ -36,3 +36,5 @@ void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer, Camera *camera
 void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer, Camera *camera);
 
 void bullets_apply_response(Bullets *bullets, BulletsStateResponse *response);
+
+bool bullets_add_bullet(Bullets *bullets, Vector2f position, double angle);

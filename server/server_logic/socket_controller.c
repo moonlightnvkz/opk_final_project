@@ -23,7 +23,7 @@ SocketController *sc_init()
         return NULL;
     }
     sc->server.sin_family = AF_INET;
-    sc->server.sin_addr.s_addr = INADDR_ANY;
+    sc->server.sin_addr.s_addr = inet_addr(SERVER_IP);
     sc->server.sin_port = htons(SERVER_PORT);
 
     if (bind(sc->socket_desc, (struct sockaddr *) &sc->server, sizeof(sc->server)) < 0) {

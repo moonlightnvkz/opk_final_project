@@ -12,7 +12,7 @@
 typedef struct tBullet {
     ObjectGeometry geometry;
     double angle;   // Velocity is the same for all bullets. Calculates according to the angle;
-    bool active;
+    int ttl;
 } Bullet;
 
 typedef struct tBullets {
@@ -27,3 +27,5 @@ void bullets_destroy(Bullets *bullets);
 void bullets_move_all(Bullets *bullets, unsigned delta_ticks);
 
 void bullet_move(Bullet *bullet, unsigned delta_ticks);
+
+bool bullets_add_bullet(Bullets *bullets, Vector2f position, double angle);

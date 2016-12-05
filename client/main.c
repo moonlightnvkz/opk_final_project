@@ -6,6 +6,7 @@
 #include "server_logic/socket_controller.h"
 #include "game_logic/player.h"
 
+// TODO: limit map and camera to borders
 // TODO: collision - DONE: players are now limited in space to window borders
 // TODO: this/diff response -> [2]response, number of player sended at the start
 // TODO: change renderer to surface

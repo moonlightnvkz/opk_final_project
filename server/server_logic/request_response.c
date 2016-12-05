@@ -20,14 +20,10 @@ void response_set_player_states(PlayerStateResponse *state, Player *player)
 void response_set_bullets_states(BulletsStateResponse *state, Bullets *bullets)
 {
     state->number = bullets->number;
-//    state->bullets.active = bullets->bullets[0].active;
-//    state->bullets.angle = bullets->bullets[0].angle;
-//    state->bullets.position.x = bullets->bullets[0].geometry.x;
-//    state->bullets.position.y = bullets->bullets[0].geometry.y;
     for (unsigned i = 0; i < bullets->number; ++i) {
         BulletStateResponse *bulletStateResponse = &state->bullets[i];
         Bullet *bullet = &bullets->bullets[i];
-        bulletStateResponse->active = bullet->active;
+        bulletStateResponse->ttl = bullet->ttl;
         bulletStateResponse->angle = bullet->angle;
         bulletStateResponse->position.x = bullet->geometry.x;
         bulletStateResponse->position.y = bullet->geometry.y;

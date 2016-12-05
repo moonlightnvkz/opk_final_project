@@ -72,27 +72,19 @@ static void player_move_to(Player *player, float x, float y)
 
 static bool player_collision_check(Player *player, float dx, float dy)
 {
-    return true;
     Vector2f new_pos = {player->geometry.x + dx, player->geometry.y + dy};
-    Vector2i dimensions = {player->geometry.width, player->geometry.height};
-    if (new_pos.x < 0 ||
-        new_pos.y < 0 ||
-        new_pos.x + dimensions.x > WINDOW_WIDTH ||
-        new_pos.y + dimensions.y > WINDOW_HEIGHT)
-    {
-        return false;
-    } else {
-        return true;
-    }
+    return (new_pos.x >= 0 &&
+            new_pos.y >= 0 &&
+            new_pos.x + player->geometry.width  <= MAP_WIDTH &&
+            new_pos.y + player->geometry.height <= MAP_HEIGHT);
 }
 
 static void player_move_on(Player *player, float dx, float dy)
 {
-    if (!player_collision_check(player, dx, dy)) {
-        return;
+    if (player_collision_check(player, dx, dy)) {
+        player->geometry.x += dx;
+        player->geometry.y += dy;
     }
-    player->geometry.x += dx;
-    player->geometry.y += dy;
 }
 
 Vector2f player_get_relative_position(Player *player, Camera *camera)
@@ -144,19 +136,15 @@ void player_angle_process(Player *player, Camera *camera)
 void player_do_shot(Player *player, Bullets *bullets)
 {
     unsigned time = SDL_GetTicks();
-    if (time - player->last_shot_time < (float)1 / PLAYER_FIRE_RATE * 1000) {
+    if (time - player->last_shot_time < 1.f / PLAYER_FIRE_RATE * 1000) {
         return;
     }
-    if (bullets->number == BULLET_MAX_AMOUNT) {
-        return;
+    Vector2f bullet_pos = {player->geometry.x + player->geometry.width / 2.f,
+                           player->geometry.y + player->geometry.width / 2.f};
+    if (bullets_add_bullet(bullets, bullet_pos, player->angle)) {
+        player->shot_done = true;
+        player->last_shot_time = time;
     }
-    player->shot_done = true;
-    bullets->bullets[bullets->number].angle = player->angle;
-    bullets->bullets[bullets->number].geometry.x = player->geometry.x + player->geometry.width / 2;
-    bullets->bullets[bullets->number].geometry.y = player->geometry.y + player->geometry.height / 2;
-    bullets->bullets[bullets->number].active = true;
-    bullets->number++;
-    player->last_shot_time = time;
 }
 
 void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response) {

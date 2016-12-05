@@ -35,7 +35,7 @@ typedef struct tPlayerStateResponse {
 typedef struct tBulletStateResponse {
     Vector2f position;
     double angle;
-    bool active;
+    int ttl;
 } BulletStateResponse;
 
 typedef struct tBulletsStateResponse {
