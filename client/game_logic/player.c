@@ -5,6 +5,7 @@
 #include <math.h>
 #include <SDL_mouse.h>
 #include <SDL_timer.h>
+#include <assert.h>
 #include "../loggers.h"
 #include "player.h"
 #include "bullets.h"
@@ -21,13 +22,9 @@ static void player_move_on(Player *player, float dx, float dy);
 
 static void player_move_to(Player *player, float x, float y);
 
-Player *player_create(SDL_Renderer *renderer)
+bool player_create(Player *player, SDL_Renderer *renderer)
 {
-    Player *player = malloc(sizeof(Player));
-    if (player == NULL) {
-        log_error("Failed to allocate memory for this_player", __FUNCTION__, __LINE__);
-        exit(1);
-    }
+    assert(player != NULL);
     GlobalVariables.number_of_player = 0;
     player->geometry.x = PLAYER_X;
     player->geometry.y = PLAYER_Y;
@@ -48,13 +45,12 @@ Player *player_create(SDL_Renderer *renderer)
         }
     }
 
-    return player;
+    return true;
 }
 
 void player_destroy(Player *player)
 {
     SDL_DestroyTexture(player->texture);
-    free(player);
 }
 
 void player_move(Player *player, unsigned delta_ticks)
@@ -106,16 +102,6 @@ void player_render(Player *player, SDL_Renderer *renderer, Camera *camera)
     render_texture_ex(player->texture, renderer,
                       (int)rel_pos.x,(int)rel_pos.y,
                       player->geometry.width, player->geometry.height, player->angle);
-}
-
-static double rad_to_deg(double rad)
-{
-    return rad / M_PI * 180;
-}
-
-static double deg_to_rad(double deg)
-{
-    return deg / 180 * M_PI;
 }
 
 // delta_time in milliseconds
@@ -217,16 +203,16 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
     player_move_on(player, shift_after_last_request.x, shift_after_last_request.y);
 }
 
-void player_apply_response_others(Player *players[PLAYER_COUNT], ResponseStructure *response) {
+void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response) {
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (i == GlobalVariables.number_of_player) {
             continue;
         }
         PlayerStateResponse *res = &response->players[i];
-        players[i]->angle = res->angle;
-        players[i]->geometry.x = res->position.x;
-        players[i]->geometry.y = res->position.y;
-        players[i]->velocity.x = res->velocity.x;
-        players[i]->velocity.y = res->velocity.y;
+        players[i].angle = res->angle;
+        players[i].geometry.x = res->position.x;
+        players[i].geometry.y = res->position.y;
+        players[i].velocity.x = res->velocity.x;
+        players[i].velocity.y = res->velocity.y;
     }
 }

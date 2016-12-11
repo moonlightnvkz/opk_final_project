@@ -14,6 +14,10 @@
 #define CAMERA_TRACK_DELAY_X        200
 #define CAMERA_TRACK_DELAY_Y        200
 
+#define POINTING_ARROW_R            100
+#define POINTING_ARROW_WIDTH        40
+#define POINTING_ARROW_HEIGHT       120
+
 #define MAP_WIDTH                   1000
 #define MAP_HEIGHT                  1000
 
@@ -37,6 +41,7 @@
 #define TILE_TEXTURE                "res/floor_texture.png"
 #define PLAYER_TEXTURE              "res/player_texture.png"
 #define BULLET_TEXTURE              "res/bullet_texture.png"
+#define POINTING_ARROW_TEXTURE      "res/pointing_arrow_texture.png"
 #define MISSING_TEXTURE             "res/missing_texture.png"
 
 #define SERVER_IP                   "127.0.0.1"

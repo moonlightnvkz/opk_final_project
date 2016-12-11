@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include "bullets.h"
-#include "../default_values.h"
 #include "../loggers.h"
 #include "sdl_helpers.h"
 #include "../server_logic/request_response.h"
@@ -15,20 +14,8 @@
 #define M_PI 3.14159265358979323846	/* pi */
 #endif
 
-Bullets *bullets_create(SDL_Renderer *renderer)
+bool bullets_create(Bullets *bullets, SDL_Renderer *renderer)
 {
-    Bullets *bullets = malloc(sizeof(Bullets));
-    if (bullets == NULL) {
-        log_error("Failed to allocate memory for bullets struct", __FUNCTION__, __LINE__);
-        return NULL;
-    }
-    bullets->bullets = malloc(sizeof(Bullet) * BULLET_MAX_AMOUNT);
-    if (bullets->bullets == NULL) {
-        log_error("Failed to allocate memory for bullets array", __FUNCTION__, __LINE__);
-        free(bullets);
-        return NULL;
-    }
-
     bullets->number = 0;
     for (size_t i = 0; i < BULLET_MAX_AMOUNT; ++i) {
         bullets->bullets[i].geometry.x = bullets->bullets[i].geometry.y = 0;
@@ -47,14 +34,12 @@ Bullets *bullets_create(SDL_Renderer *renderer)
             return NULL;
         }
     }
-    return bullets;
+    return true;
 }
 
 void bullets_destroy(Bullets *bullets)
 {
     SDL_DestroyTexture(bullets->texture);
-    free(bullets->bullets);
-    free(bullets);
 }
 
 static void bullet_swap(Bullet *bullet1, Bullet *bullet2)

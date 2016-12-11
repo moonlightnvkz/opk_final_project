@@ -16,23 +16,23 @@
 int main(int argc , char *argv[])
 {
     logger_init();
-    MVC *mvc = mvc_init();
-    if (mvc == NULL) {
+    MVC mvc;
+    if (!mvc_init(&mvc)) {
         log_error("Failed to create mvc", __FUNCTION__, __LINE__);
         logger_destroy();
         exit(1);
     }
-    SocketController *socketController = sc_init();
-    if (socketController == NULL) {
+    SocketController socketController;
+    if (!sc_init(&socketController)) {
         log_error("Failed to create socket controller", __FUNCTION__, __LINE__);
-        mvc_destroy(mvc);
+        mvc_destroy(&mvc);
         logger_destroy();
         exit(1);
     }
-    if (sc_receive_start_signal(socketController) != SC_NO_ERROR) {
+    if (sc_receive_start_signal(&socketController) != SC_NO_ERROR) {
         log_error("sc_receive_start_signal failed", __FUNCTION__, __LINE__);
-        mvc_destroy(mvc);
-        sc_destroy(socketController);
+        mvc_destroy(&mvc);
+        sc_destroy(&socketController);
         logger_destroy();
     }
     bool quit = false;
@@ -51,32 +51,32 @@ int main(int argc , char *argv[])
             }
         }
         int res;
-        res = mvc_process_key(mvc, keystates);
+        res = mvc_process_key(&mvc, keystates);
         if (res == MVC_EXIT_KEY_PRESSED) {
             break;
         }
 
-        mvc_process_moving(mvc, curr_ticks - prev_ticks);
+        mvc_process_moving(&mvc, curr_ticks - prev_ticks);
 
-        sc_send_current_state(socketController, mvc->players[GlobalVariables.number_of_player]);
+        sc_send_current_state(&socketController, mvc.players + GlobalVariables.number_of_player);
 
-        res = sc_receive_current_state(socketController);
+        res = sc_receive_current_state(&socketController);
         if (res == SC_CONNECTION_CLOSED) {
             log_error("Connection closed", __FUNCTION__, __LINE__);
             break;
         }
         if (res == SC_NO_ERROR) {
-            mvc_apply_response(mvc, &socketController->requests_list, &socketController->last_response);
+            mvc_apply_response(&mvc, &socketController.requests_list, &socketController.last_response);
         }
 
-        mvc_render(mvc);
+        mvc_render(&mvc);
 
         prev_ticks = curr_ticks;
         curr_ticks = SDL_GetTicks();
     }
 
-    mvc_destroy(mvc);
-    sc_destroy(socketController);
+    mvc_destroy(&mvc);
+    sc_destroy(&socketController);
     logger_destroy();
     return 0;
 }

@@ -27,7 +27,7 @@ typedef struct tSocketController {
     ResponseStructure last_response;
 } SocketController;
 
-SocketController *sc_init();
+bool sc_init(SocketController *sc);
 
 void sc_destroy(SocketController *sc);
 

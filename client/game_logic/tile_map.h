@@ -20,7 +20,7 @@ typedef struct tTileMap {
     Tile tile;
 } TileMap;
 
-TileMap *tilemap_create(SDL_Renderer *renderer);
+bool tilemap_create(TileMap *map, SDL_Renderer *renderer);
 
 void tilemap_destroy(TileMap *map);
 

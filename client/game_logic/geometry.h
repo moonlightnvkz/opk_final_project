@@ -39,3 +39,7 @@ typedef struct tIntCircle {
 bool geometry_rect_rect_intersects(IntRect rect1, IntRect rect2);
 
 bool geometry_circle_rect_intersects(IntCircle circle, IntRect rect);
+
+double rad_to_deg(double rad);
+
+double deg_to_rad(double deg);

@@ -2,27 +2,25 @@
 // Created by moonlightnvkz on 04.12.16.
 //
 
-#include <stdlib.h>
 #include "camera.h"
 #include "../default_values.h"
 #include "player.h"
 
-Camera *camera_create()
+bool camera_create(Camera *camera, SDL_Renderer *renderer)
 {
-    Camera *c = malloc(sizeof(Camera));
-    if (!c) {
+    if (!pa_create(&camera->arrow, renderer)) {
         return NULL;
     }
-    c->geometry.x = CAMERA_START_X;
-    c->geometry.y = CAMERA_START_Y;
-    c->geometry.width = CAMERA_WIDTH;
-    c->geometry.height = CAMERA_HEIGHT;
-    return c;
+    camera->geometry.x = CAMERA_START_X;
+    camera->geometry.y = CAMERA_START_Y;
+    camera->geometry.width = CAMERA_WIDTH;
+    camera->geometry.height = CAMERA_HEIGHT;
+    return true;
 }
 
 void camera_destroy(Camera *camera)
 {
-    free(camera);
+    pa_destroy(&camera->arrow);
 }
 
 static bool camera_collision_check_x(Camera *camera, float dx)
@@ -78,4 +76,9 @@ void camera_move_after_the_player(Camera *camera, Player *player)
         shift.y > 0 ? (shift.y -= CAMERA_TRACK_DELAY_Y) : (shift.y += CAMERA_TRACK_DELAY_Y);
     }
     camera_move_on(camera, shift.x, shift.y);
+}
+
+void camera_render_pointing_arrow(Camera *camera, SDL_Renderer *renderer, Vector2f point_from, Vector2f point_to)
+{
+    pa_render(&camera->arrow, camera, renderer, point_from, point_to);
 }

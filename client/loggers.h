@@ -4,7 +4,9 @@
 
 #pragma once
 
-int logger_init();
+#include <stdbool.h>
+
+bool logger_init();
 
 void logger_destroy();
 

@@ -5,32 +5,32 @@
 #pragma once
 
 #include <SDL_render.h>
+#include <stdbool.h>
 #include "../my_deque.h"
 #include "../default_values.h"
+#include "camera.h"
+#include "tile_map.h"
+#include "player.h"
+#include "bullets.h"
 
-typedef struct tPlayer Player;
-typedef struct tBullets Bullets;
 typedef struct tResponseStructure ResponseStructure;
-typedef struct tCamera Camera;
-typedef struct tTileMap TileMap;
 
 typedef enum eMvcReturnCodes {
     MVC_NO_ERRORS,
-    MVC_EXIT_KEY_PRESSED,
-    MVC_SHOT_DONE
+    MVC_EXIT_KEY_PRESSED
 } MvcReturnCodes;
 
 typedef struct tMVC {
     SDL_Window *window;
     SDL_Renderer *renderer;
-    Camera *camera;
+    Camera camera;
 
-    TileMap *map;
-    Player *players[PLAYER_COUNT];
-    Bullets *bullets;
+    TileMap map;
+    Player players[PLAYER_COUNT];
+    Bullets bullets;
 } MVC;
 
-MVC *mvc_init();
+bool mvc_init(MVC *mvc);
 
 void mvc_destroy(MVC *mvc);
 

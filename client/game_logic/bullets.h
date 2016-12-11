@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <SDL_system.h>
 #include "geometry.h"
+#include "../default_values.h"
 
 typedef struct tBulletsStateResponse BulletsStateResponse;
 typedef struct tCamera Camera;
@@ -18,12 +19,12 @@ typedef struct tBullet {
 } Bullet;
 
 typedef struct tBullets {
-    Bullet *bullets;
+    Bullet bullets[BULLET_MAX_AMOUNT];
     unsigned number;  // Number of active bullets. Memory for all bullets allocates on the start
     SDL_Texture *texture;
 } Bullets;
 
-Bullets *bullets_create(SDL_Renderer *renderer);
+bool bullets_create(Bullets *bullets, SDL_Renderer *renderer);
 
 void bullets_destroy(Bullets *bullets);
 

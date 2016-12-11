@@ -27,7 +27,7 @@ struct tGlobalVariables {
     unsigned number_of_player;
 } GlobalVariables;
 
-Player *player_create(SDL_Renderer *renderer);
+bool player_create(Player *player, SDL_Renderer *renderer);
 
 void player_destroy(Player *player);
 
@@ -43,4 +43,4 @@ void player_do_shot(Player *player, Bullets *bullets);
 
 void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response);
 
-void player_apply_response_others(Player *players[PLAYER_COUNT], ResponseStructure *response);
+void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response);

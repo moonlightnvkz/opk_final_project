@@ -5,26 +5,23 @@
 #include <stdio.h>
 #include <unistd.h>    //close
 #include <SDL_timer.h>
+#include <assert.h>
 #include "socket_controller.h"
 #include "../game_logic/player.h"
 #include "../loggers.h"
 
 static int sc_connect_to_server(SocketController *sc);
 
-SocketController *sc_init()
+bool sc_init(SocketController *sc)
 {
-    SocketController *sc = malloc(sizeof(SocketController));
-    if (sc == NULL) {
-        log_error("Failed to allocate memory for socket controller", __FUNCTION__, __LINE__);
-        return NULL;
-    }
+    assert(sc != NULL);
 
     deque_create(&sc->requests_list);
 
     if (sc_connect_to_server(sc) != 0) {
         log_error("Failed to connect to the server", __FUNCTION__, __LINE__);
         sc_destroy(sc);
-        return NULL;
+        return false;
     }
 
     sc->last_response.res_number = 0;
@@ -35,12 +32,12 @@ SocketController *sc_init()
     }
     sc->last_response.bullets.number = 0;
     for (int i = 0; i < BULLET_MAX_AMOUNT; ++i) {
-        BulletStateResponse *bullet = &sc->last_response.bullets.bullets[i];
+        BulletStateResponse *bullet = sc->last_response.bullets.bullets + i;
         bullet->angle = 0.0;
         bullet->position.x = bullet->position.y = 0;
         bullet->ttl = 0;
     }
-    return sc;
+    return true;
 }
 void sc_destroy(SocketController *sc)
 {
@@ -49,7 +46,6 @@ void sc_destroy(SocketController *sc)
     };
     close(sc->sock);
     deque_destroy(&sc->requests_list);
-    free(sc);
 }
 
 static int sc_connect_to_server(SocketController *sc) {

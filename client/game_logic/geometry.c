@@ -5,6 +5,10 @@
 #include <math.h>
 #include "geometry.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846	/* pi */
+#endif
+
 bool geometry_rect_is_intersects(IntRect rect1, IntRect rect2)
 {
     return !(rect1.x + rect1.width  < rect2.x ||
@@ -33,4 +37,14 @@ bool geometry_circle_rect_intersects(IntCircle circle, IntRect rect)
                               (circleDistance.y - rect.height/2)^2;
 
     return (cornerDistance_sq <= (circle.radius^2));
+}
+
+double rad_to_deg(double rad)
+{
+    return rad / M_PI * 180;
+}
+
+double deg_to_rad(double deg)
+{
+    return deg / 180 * M_PI;
 }

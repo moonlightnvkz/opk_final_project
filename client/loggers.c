@@ -8,13 +8,13 @@
 
 static FILE* log_file;
 
-int logger_init()
+bool logger_init()
 {
     log_file = fopen("log.log", "w");
     if (!log_file) {
-        return 1;
+        return true;
     } else {
-        return 0;
+        return false;
     }
 }
 
