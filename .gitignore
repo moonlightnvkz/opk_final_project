@@ -12,3 +12,6 @@ client_copy/
 
 # Notes
 *.ignore
+
+# GIMP projects
+*.xcf

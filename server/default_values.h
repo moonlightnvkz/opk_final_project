@@ -16,6 +16,7 @@
 #define PLAYER_HEIGHT               35
 #define PLAYER_VELOCITY             600
 #define PLAYER_FIRE_RATE            5   // Shots per second
+#define PLAYER_COUNT                2
 
 #define BULLET_VELOCITY             600
 #define BULLET_MAX_AMOUNT           40  // For both players
@@ -27,4 +28,3 @@
 #define SERVER_PORT                 8888
 #define SERVER_TICKRATE             20
 #define SERVER_START_SIGNAL         'S'
-#define SERVER_START_SIGNAL_LENGTH  1

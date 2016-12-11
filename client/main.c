@@ -6,14 +6,11 @@
 #include "server_logic/socket_controller.h"
 #include "game_logic/player.h"
 
-// TODO: limit map and camera to borders
 // TODO: collision - DONE: players are now limited in space to window borders
-// TODO: this/diff response -> [2]response, number of player sended at the start
-// TODO: change renderer to surface
 // TODO: kills
-// TODO: bullet reflection
+// TODO: bullet reflection  ???
 // TODO: static items with collision
-// TODO: big map with small view + arrows pointing to other player(s)
+// TODO: big map with small view (DONE) + arrows pointing to other player(s)
 // TODO: EXPLOSIONS!!! (barrels)
 
 int main(int argc , char *argv[])
@@ -61,7 +58,7 @@ int main(int argc , char *argv[])
 
         mvc_process_moving(mvc, curr_ticks - prev_ticks);
 
-        sc_send_current_state(socketController, mvc->this_player);
+        sc_send_current_state(socketController, mvc->players[GlobalVariables.number_of_player]);
 
         res = sc_receive_current_state(socketController);
         if (res == SC_CONNECTION_CLOSED) {

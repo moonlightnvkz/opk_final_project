@@ -9,11 +9,7 @@
 #include "../game_logic/player.h"
 #include "../loggers.h"
 
-int sc_connect_to_server(SocketController *sc);
-
-int sc_send_data_to_the_server(SocketController *sc, RequestStructure *request, size_t size);
-
-int sc_receive_reply_from_the_server(SocketController *sc, ResponseStructure *reply, size_t size);
+static int sc_connect_to_server(SocketController *sc);
 
 SocketController *sc_init()
 {
@@ -32,8 +28,11 @@ SocketController *sc_init()
     }
 
     sc->last_response.res_number = 0;
-    sc->last_response.this_player_state.position.x = sc->last_response.this_player_state.position.y = 0;
-    sc->last_response.this_player_state.angle = 0;
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        sc->last_response.players[i].position.x = sc->last_response.players[i].position.y = 0;
+        sc->last_response.players[i].velocity.x = sc->last_response.players[i].velocity.y = 0;
+        sc->last_response.players[i].angle = 0;
+    }
     sc->last_response.bullets.number = 0;
     for (int i = 0; i < BULLET_MAX_AMOUNT; ++i) {
         BulletStateResponse *bullet = &sc->last_response.bullets.bullets[i];
@@ -53,7 +52,7 @@ void sc_destroy(SocketController *sc)
     free(sc);
 }
 
-int sc_connect_to_server(SocketController *sc) {
+static int sc_connect_to_server(SocketController *sc) {
     //Create socket
     sc->sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sc->sock == -1) {
@@ -131,16 +130,17 @@ int sc_receive_current_state(SocketController *sc) {
 
 int sc_receive_start_signal(SocketController *sc)
 {
-    char start_signal = 0;
-    if (recv(sc->sock, &start_signal, SERVER_START_SIGNAL_LENGTH, MSG_WAITALL) <= 0) {
+    StartSignal start_signal = {0, 0};
+    if (recv(sc->sock, &start_signal, sizeof(StartSignal), MSG_WAITALL) <= 0) {
         log_error("Receive of start signal failed", __FUNCTION__, __LINE__);
         return SC_RECEIVE_FAILED;
     }
-    if (start_signal != SERVER_START_SIGNAL) {
+    if (start_signal.symbol != SERVER_START_SIGNAL) {
         return SC_START_SIGNAL_MATHCHING_ERROR;
     }
+    GlobalVariables.number_of_player = start_signal.number_of_player;
     char msg[50];
-    sprintf(msg, "Start signal received:%c", start_signal);
-    log_action("Start signal received", __FUNCTION__, __LINE__);
+    sprintf(msg, "Start signal received:%c - %d", start_signal.symbol, GlobalVariables.number_of_player);
+    log_action(msg, __FUNCTION__, __LINE__);
     return SC_NO_ERROR;
 }

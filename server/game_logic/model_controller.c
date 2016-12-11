@@ -19,17 +19,13 @@ ModelController *mc_init()
         log_error("Failed to allocate memory for model controller", __FUNCTION__, __LINE__);
         return NULL;
     }
-    mc->player1 = player_create();
-    if (mc->player1 == NULL) {
-        log_error("Failed to allocate memory for player1", __FUNCTION__, __LINE__);
-        mc_destroy(mc);
-        return NULL;
-    }
-    mc->player2 = player_create();
-    if (mc->player2 == NULL) {
-        log_error("Failed to allocate memory for player2", __FUNCTION__, __LINE__);
-        mc_destroy(mc);
-        return NULL;
+    for (size_t i = 0; i < PLAYER_COUNT; ++i) {
+        mc->players[i] = player_create();
+        if (mc->players[i] ==  NULL) {
+            log_error("Failed to allocate memory for player1", __FUNCTION__, __LINE__);
+            mc_destroy(mc);
+            return NULL;
+        }
     }
 
     mc->bullets = bullets_create();
@@ -43,11 +39,10 @@ ModelController *mc_init()
 
 void mc_destroy(ModelController *mc)
 {
-    if (mc->player1 != NULL) {
-        player_destroy(mc->player1);
-    }
-    if (mc->player2 != NULL) {
-        player_destroy(mc->player2);
+    for (size_t i = 0; i < PLAYER_COUNT; ++i) {
+        if (mc->players[i] != NULL) {
+            player_destroy(mc->players[i]);
+        }
     }
     if (mc->bullets != NULL) {
         bullets_destroy(mc->bullets);
@@ -57,8 +52,9 @@ void mc_destroy(ModelController *mc)
 
 void mc_process_moving(ModelController *mc, unsigned delta_ticks)
 {
-    player_move(mc->player1, delta_ticks);
-    player_move(mc->player2, delta_ticks);
+    for (size_t i = 0; i < PLAYER_COUNT; ++i) {
+        player_move(mc->players[i], delta_ticks);
+    }
     bullets_move_all(mc->bullets, delta_ticks);
 }
 
@@ -97,5 +93,7 @@ void mc_check_request_and_fix(Player *player, RequestStructure *request) {
 
 void mc_reset_temp_flags(ModelController *mc)
 {
-    mc->player1->shot_done = mc->player2->shot_done = 0;
+    for (size_t i = 0; i < PLAYER_COUNT; ++i) {
+        mc->players[i]->shot_done = false;
+    }
 }

@@ -5,11 +5,10 @@
 #include <math.h>
 #include <SDL_mouse.h>
 #include <SDL_timer.h>
+#include "../loggers.h"
 #include "player.h"
 #include "bullets.h"
 #include "sdl_helpers.h"
-#include "../default_values.h"
-#include "../loggers.h"
 #include "../server_logic/request_response.h"
 #include "../my_deque.h"
 #include "camera.h"
@@ -29,6 +28,7 @@ Player *player_create(SDL_Renderer *renderer)
         log_error("Failed to allocate memory for this_player", __FUNCTION__, __LINE__);
         exit(1);
     }
+    GlobalVariables.number_of_player = 0;
     player->geometry.x = PLAYER_X;
     player->geometry.y = PLAYER_Y;
     player->geometry.width = PLAYER_WIDTH;
@@ -70,19 +70,26 @@ static void player_move_to(Player *player, float x, float y)
     player->geometry.y = y;
 }
 
-static bool player_collision_check(Player *player, float dx, float dy)
+static bool player_collision_check_x(Player *player, float dx)
 {
-    Vector2f new_pos = {player->geometry.x + dx, player->geometry.y + dy};
-    return (new_pos.x >= 0 &&
-            new_pos.y >= 0 &&
-            new_pos.x + player->geometry.width  <= MAP_WIDTH &&
-            new_pos.y + player->geometry.height <= MAP_HEIGHT);
+    float new_x = player->geometry.x + dx;
+    return (new_x > 0 &&
+            new_x + player->geometry.width  < MAP_WIDTH);
+}
+
+static bool player_collision_check_y(Player *player, float dy)
+{
+    float new_y = player->geometry.x + dy;
+    return (new_y > 0 &&
+            new_y + player->geometry.height  < MAP_HEIGHT);
 }
 
 static void player_move_on(Player *player, float dx, float dy)
 {
-    if (player_collision_check(player, dx, dy)) {
+    if (player_collision_check_x(player, dy)) {
         player->geometry.x += dx;
+    }
+    if (player_collision_check_y(player, dy)) {
         player->geometry.y += dy;
     }
 }
@@ -101,25 +108,39 @@ void player_render(Player *player, SDL_Renderer *renderer, Camera *camera)
                       player->geometry.width, player->geometry.height, player->angle);
 }
 
+static double rad_to_deg(double rad)
+{
+    return rad / M_PI * 180;
+}
+
+static double deg_to_rad(double deg)
+{
+    return deg / 180 * M_PI;
+}
+
 // delta_time in milliseconds
 void player_keystates_process(Player *player, const Uint8 *keystates)
 {
     player->velocity.x = player->velocity.y = 0;
     if (keystates[SDL_SCANCODE_UP])
     {
-        player->velocity.y -= PLAYER_VELOCITY;
+        player->velocity.x += PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
+        player->velocity.y -= PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
     }
     if (keystates[SDL_SCANCODE_DOWN])
     {
-        player->velocity.y += PLAYER_VELOCITY;
+        player->velocity.x -= PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
+        player->velocity.y += PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
     }
     if (keystates[SDL_SCANCODE_LEFT])
     {
-        player->velocity.x -= PLAYER_VELOCITY;
+        player->velocity.x -= PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
+        player->velocity.y -= PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
     }
     if (keystates[SDL_SCANCODE_RIGHT])
     {
-        player->velocity.x += PLAYER_VELOCITY;
+        player->velocity.x += PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
+        player->velocity.y += PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
     }
 }
 
@@ -130,7 +151,7 @@ void player_angle_process(Player *player, Camera *camera)
     SDL_GetMouseState(&mouse_x, &mouse_y);
     double x = mouse_x - rel_pos.x - player->geometry.width / 2.0;
     double y = mouse_y - rel_pos.y - player->geometry.height / 2.0;
-    player->angle = (int)(atan2(y, x) / M_PI * 180) + 90;
+    player->angle = (int)rad_to_deg(atan2(y, x)) + 90;
 }
 
 void player_do_shot(Player *player, Bullets *bullets)
@@ -160,11 +181,11 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
     }
 
     // Save the last shift (server doesn't know about it) and move player to the point in response.
-    Vector2f shift_after_last_request = {player->geometry.x - response->this_player_state.position.x,
-                                         player->geometry.y - response->this_player_state.position.y};
+    Vector2f shift_after_last_request = {player->geometry.x - response->players[GlobalVariables.number_of_player].position.x,
+                                         player->geometry.y - response->players[GlobalVariables.number_of_player].position.y};
     player_move_to(player,
-                   response->this_player_state.position.x,
-                   response->this_player_state.position.y);
+                   response->players[GlobalVariables.number_of_player].position.x,
+                   response->players[GlobalVariables.number_of_player].position.y);
 
     // This request should be deleted, so there is special processing
     RequestStructure *request = (RequestStructure *) deque_remove_first(requests_list);
@@ -196,11 +217,16 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
     player_move_on(player, shift_after_last_request.x, shift_after_last_request.y);
 }
 
-void player_apply_response_diff(Player *player, ResponseStructure *response) {
-    PlayerStateResponse *response_diff = &response->diff_player_state;
-    player->angle = response_diff->angle;
-    player->geometry.x = response_diff->position.x;
-    player->geometry.y = response_diff->position.y;
-    player->velocity.x = response_diff->velocity.x;
-    player->velocity.y = response_diff->velocity.y;
+void player_apply_response_others(Player *players[PLAYER_COUNT], ResponseStructure *response) {
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        if (i == GlobalVariables.number_of_player) {
+            continue;
+        }
+        PlayerStateResponse *res = &response->players[i];
+        players[i]->angle = res->angle;
+        players[i]->geometry.x = res->position.x;
+        players[i]->geometry.y = res->position.y;
+        players[i]->velocity.x = res->velocity.x;
+        players[i]->velocity.y = res->velocity.y;
+    }
 }

@@ -61,17 +61,13 @@ MVC *mvc_init()
         mvc_destroy(mvc);
         return NULL;
     }
-    mvc->this_player = player_create(mvc->renderer);
-    if (mvc->this_player == NULL) {
-        log_error("Failed to create this_player", __FUNCTION__, __LINE__);
-        mvc_destroy(mvc);
-        return NULL;
-    }
-    mvc->diff_player = player_create(mvc->renderer);
-    if (mvc->diff_player == NULL) {
-        log_error("Failed to create diff_player", __FUNCTION__, __LINE__);
-        mvc_destroy(mvc);
-        return NULL;
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        mvc->players[i] = player_create(mvc->renderer);
+        if (mvc->players[i] == NULL) {
+            log_error("Failed to create this_player", __FUNCTION__, __LINE__);
+            mvc_destroy(mvc);
+            return NULL;
+        }
     }
 
     mvc->bullets = bullets_create(mvc->renderer);
@@ -91,14 +87,13 @@ void mvc_destroy(MVC *mvc)
     if (mvc->renderer != NULL) {
         SDL_DestroyRenderer(mvc->renderer);
     }
-    if (mvc->this_player != NULL) {
-        player_destroy(mvc->this_player);
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        if (mvc->players[i] != NULL) {
+            player_destroy(mvc->players[i]);
+        }
     }
     if (mvc->map != NULL) {
         tilemap_destroy(mvc->map);
-    }
-    if (mvc->diff_player != NULL) {
-        player_destroy(mvc->diff_player);
     }
     if (mvc->bullets != NULL) {
         bullets_destroy(mvc->bullets);
@@ -115,8 +110,9 @@ void mvc_render(MVC *mvc)
 {
     SDL_RenderClear(mvc->renderer);
     tilemap_render(mvc->map, mvc->renderer, mvc->camera);
-    player_render(mvc->this_player, mvc->renderer, mvc->camera);
-    player_render(mvc->diff_player, mvc->renderer, mvc->camera);
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        player_render(mvc->players[i], mvc->renderer, mvc->camera);
+    }
     bullets_render_all(mvc->bullets, mvc->renderer, mvc->camera);
     SDL_RenderPresent(mvc->renderer);
 }
@@ -127,29 +123,30 @@ int mvc_process_key(MVC *mvc, const Uint8 *keystates)
         return MVC_EXIT_KEY_PRESSED;
     }
 
-    player_angle_process(mvc->this_player, mvc->camera);
+    player_angle_process(mvc->players[GlobalVariables.number_of_player], mvc->camera);
 
-    player_keystates_process(mvc->this_player, keystates);
+    player_keystates_process(mvc->players[GlobalVariables.number_of_player], keystates);
 
     if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
-        player_do_shot(mvc->this_player, mvc->bullets);
+        player_do_shot(mvc->players[GlobalVariables.number_of_player], mvc->bullets);
     }
     return MVC_NO_ERRORS;
 }
 
 void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
 {
-    player_move(mvc->this_player, delta_ticks);
-    player_move(mvc->diff_player, delta_ticks);
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        player_move(mvc->players[i], delta_ticks);
+    }
     bullets_move_all(mvc->bullets, delta_ticks);
 
-    camera_move_after_the_player(mvc->camera, mvc->this_player);
+    camera_move_after_the_player(mvc->camera, mvc->players[GlobalVariables.number_of_player]);
 }
 
 void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_response)
 {
-    player_apply_response_this(mvc->this_player, requests_list, last_response);
-    player_apply_response_diff(mvc->diff_player, last_response);
+    player_apply_response_this(mvc->players[GlobalVariables.number_of_player], requests_list, last_response);
+    player_apply_response_others(mvc->players, last_response);
 
     bullets_apply_response(mvc->bullets, &last_response->bullets);
 }

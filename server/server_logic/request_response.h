@@ -13,6 +13,11 @@ typedef struct tBullets Bullets;
 
 
 #pragma pack(push, 1)
+typedef struct tStartSignal {
+    char symbol;
+    unsigned number_of_player;
+} StartSignal;
+
 typedef struct tPlayerStateRequest {
     double angle;
     Vector2f position;
@@ -44,9 +49,8 @@ typedef struct tBulletsStateResponse {
 } BulletsStateResponse;
 
 typedef struct tResponseStructure {
-    unsigned res_number;
-    PlayerStateResponse this_player_state;
-    PlayerStateResponse diff_player_state;
+    unsigned res_number;    // res_number should be set exactly before sending response!
+    PlayerStateResponse players[PLAYER_COUNT];
     BulletsStateResponse bullets;
 } ResponseStructure;
 #pragma pack(pop)

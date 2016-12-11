@@ -4,14 +4,15 @@
 
 #pragma once
 
+#include "../default_values.h"
+
 typedef struct tRequestStructure RequestStructure;
 typedef struct tResponseStructure ResponseStructure;
 typedef struct tPlayer Player;
 typedef struct tBullets Bullets;
 
 typedef struct tModelController {
-    Player *player1;
-    Player *player2;
+    Player *players[PLAYER_COUNT];
     Bullets *bullets;
 } ModelController;
 

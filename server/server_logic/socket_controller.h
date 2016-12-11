@@ -22,25 +22,23 @@ typedef enum eScErrors {
 
 typedef struct tSocketController {
     int socket_desc;
-    int socket_player1;
-    int socket_player2;
+    int player_sockets[PLAYER_COUNT];
     struct sockaddr_in server;
-    RequestStructure request_player1;
-    RequestStructure request_player2;
-    ResponseStructure response_player1;
-    ResponseStructure response_player2;
+    unsigned request_numbers[PLAYER_COUNT]; // numbers of request for each player
+    RequestStructure request;
+    ResponseStructure response;
 } SocketController;
 
 SocketController *sc_init();
 
 void sc_destroy(SocketController *sc);
 
-int sc_accept_player(SocketController *sc, unsigned number);
+int sc_accept_player(SocketController *sc, unsigned number_of_player);
 
 int sc_receive_request(SocketController *sc, unsigned number_of_player);
 
 void sc_create_responses(SocketController *sc, ModelController *mc);
 
-int sc_send_response(SocketController *sc, unsigned player_number);
+int sc_send_response(SocketController *sc, unsigned number_of_player);
 
 int sc_send_start_signal(SocketController *sc, unsigned number_of_player);

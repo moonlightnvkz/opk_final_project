@@ -6,6 +6,7 @@
 
 #include <SDL_render.h>
 #include "../my_deque.h"
+#include "../default_values.h"
 
 typedef struct tPlayer Player;
 typedef struct tBullets Bullets;
@@ -25,8 +26,7 @@ typedef struct tMVC {
     Camera *camera;
 
     TileMap *map;
-    Player *this_player;
-    Player *diff_player;
+    Player *players[PLAYER_COUNT];
     Bullets *bullets;
 } MVC;
 

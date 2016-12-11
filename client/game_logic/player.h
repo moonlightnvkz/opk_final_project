@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <SDL_system.h>
 #include "geometry.h"
+#include "../default_values.h"
 
 typedef struct tBullets Bullets;
 typedef struct tResponseStructure ResponseStructure;
@@ -21,6 +22,10 @@ typedef struct tPlayer {
     bool shot_done;         // on this loop. After request is sent, shot_done -> false
     unsigned last_shot_time;
 } Player;
+
+struct tGlobalVariables {
+    unsigned number_of_player;
+} GlobalVariables;
 
 Player *player_create(SDL_Renderer *renderer);
 
@@ -38,4 +43,4 @@ void player_do_shot(Player *player, Bullets *bullets);
 
 void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response);
 
-void player_apply_response_diff(Player *player, ResponseStructure *response);
+void player_apply_response_others(Player *players[PLAYER_COUNT], ResponseStructure *response);
