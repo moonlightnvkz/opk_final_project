@@ -3,6 +3,7 @@
 //
 
 #include <SDL_timer.h>
+#include <assert.h>
 #include "model_controller.h"
 #include "player.h"
 #include "bullets.h"
@@ -12,50 +13,39 @@
 
 void mc_check_request_and_fix(Player *player, RequestStructure *request);
 
-ModelController *mc_init()
+bool mc_init(ModelController *mc)
 {
-    ModelController *mc = malloc(sizeof(ModelController));
-    if (mc == NULL) {
-        log_error("Failed to allocate memory for model controller", __FUNCTION__, __LINE__);
-        return NULL;
-    }
+    assert(mc != NULL);
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
-        mc->players[i] = player_create();
-        if (mc->players[i] ==  NULL) {
+        if (!player_create(mc->players + i)) {
             log_error("Failed to allocate memory for player1", __FUNCTION__, __LINE__);
             mc_destroy(mc);
-            return NULL;
+            return false;
         }
     }
 
-    mc->bullets = bullets_create();
-    if (mc->bullets == NULL) {
+    if (!bullets_create(&mc->bullets)) {
         log_error("Failed to allocate memory for bullets", __FUNCTION__, __LINE__);
         mc_destroy(mc);
-        return NULL;
+        return false;
     }
-    return mc;
+    return true;
 }
 
 void mc_destroy(ModelController *mc)
 {
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
-        if (mc->players[i] != NULL) {
-            player_destroy(mc->players[i]);
-        }
+        player_destroy(mc->players + i);
     }
-    if (mc->bullets != NULL) {
-        bullets_destroy(mc->bullets);
-    }
-    free(mc);
+    bullets_destroy(&mc->bullets);
 }
 
 void mc_process_moving(ModelController *mc, unsigned delta_ticks)
 {
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
-        player_move(mc->players[i], delta_ticks);
+        player_move(mc->players + i, delta_ticks);
     }
-    bullets_move_all(mc->bullets, delta_ticks);
+    bullets_move_all(&mc->bullets, delta_ticks, mc->players);
 }
 
 void mc_apply_request(ModelController *mc, Player *player, RequestStructure *request)
@@ -63,7 +53,7 @@ void mc_apply_request(ModelController *mc, Player *player, RequestStructure *req
     mc_check_request_and_fix(player, request);
     player_apply_request(player, request);
     if (request->player_state.shot_done) {
-        player_do_shot(player, mc->bullets);
+        player_do_shot(player, &mc->bullets);
     }
 }
 
@@ -94,6 +84,6 @@ void mc_check_request_and_fix(Player *player, RequestStructure *request) {
 void mc_reset_temp_flags(ModelController *mc)
 {
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
-        mc->players[i]->shot_done = false;
+        mc->players[i].shot_done = false;
     }
 }

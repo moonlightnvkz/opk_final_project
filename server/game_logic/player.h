@@ -13,8 +13,9 @@ typedef struct tRequestStructure RequestStructure;
 
 
 typedef struct tPlayer {
+    bool is_alive;
     ObjectGeometry geometry;
-    double angle;
+    int angle;
     Vector2i velocity;
     bool shot_done;
     unsigned last_request_time;
@@ -22,7 +23,7 @@ typedef struct tPlayer {
 } Player;
 
 
-Player *player_create();
+bool player_create(Player *player);
 
 void player_destroy(Player *player);
 

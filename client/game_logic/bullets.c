@@ -9,10 +9,13 @@
 #include "sdl_helpers.h"
 #include "../server_logic/request_response.h"
 #include "camera.h"
+#include "player.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
 #endif
+
+void bullet_move(Bullet *bullet, unsigned delta_ticks, Player players[PLAYER_COUNT]);
 
 bool bullets_create(Bullets *bullets, SDL_Renderer *renderer)
 {
@@ -45,8 +48,19 @@ void bullets_destroy(Bullets *bullets)
 static void bullet_swap(Bullet *bullet1, Bullet *bullet2)
 {
     Bullet temp = *bullet1;
-    *bullet1 = *bullet2;
-    *bullet2 = temp;
+    bullet1->angle = bullet2->angle;
+    bullet1->ttl = bullet2->ttl;
+    bullet1->geometry.x = bullet2->geometry.x;
+    bullet1->geometry.y = bullet2->geometry.y;
+    bullet1->geometry.width = bullet2->geometry.width;
+    bullet1->geometry.height = bullet2->geometry.height;
+
+    bullet2->angle = temp.angle;
+    bullet2->ttl = temp.ttl;
+    bullet2->geometry.x = temp.geometry.x;
+    bullet2->geometry.y = temp.geometry.y;
+    bullet2->geometry.width = temp.geometry.width;
+    bullet2->geometry.height = temp.geometry.height;
 }
 
 static bool bullet_need_disactivate(Bullet *bullet) {
@@ -56,41 +70,74 @@ static bool bullet_need_disactivate(Bullet *bullet) {
 static bool bullet_is_active(Bullet *bullet) {
     return bullet->ttl > 0;
 }
-void bullets_move_all(Bullets *bullets, unsigned delta_ticks)
+void bullets_move_all(Bullets *bullets, unsigned delta_ticks, Player players[PLAYER_COUNT])
 {
     for (int i = 0; i < bullets->number; ++i) {
         Bullet *bullet = bullets->bullets + i;
+        if (bullet_need_disactivate(bullet)) {
+            bullets->number--;
+            bullet_swap(bullet, bullets->bullets + bullets->number);
+            continue;
+        }
         if (bullet_is_active(bullet))
         {
-            bullet_move(bullet, delta_ticks);
-            if (bullet_need_disactivate(bullet)) {
-                bullets->number--;
-                bullet_swap(bullet, bullets->bullets + bullets->number);
-            }
+            bullet_move(bullet, delta_ticks, players);
         }
     }
 }
 
-static bool bullet_should_reflect(Bullet *bullet, unsigned delta_ticks)
+static void bullet_reflect(Bullet *bullet)
 {
-    return false;
-}
+    double x = bullet->geometry.x;
+    double y = bullet->geometry.y;
+    double w = bullet->geometry.width;
+    double h = bullet->geometry.height;
 
-static void bullet_reflect(Bullet *bullet, unsigned delta_ticks)
-{
-
-}
-
-void bullet_move(Bullet *bullet, unsigned delta_ticks)
-{
-    if (bullet_should_reflect(bullet, delta_ticks)) {
-        bullet_reflect(bullet, delta_ticks);
-    } else {
-        float shift = (float) delta_ticks / 1000 * BULLET_VELOCITY;
-        bullet->geometry.y -= shift * cos(bullet->angle / 180 * M_PI);
-        bullet->geometry.x += shift * sin(bullet->angle / 180 * M_PI);
-        bullet->ttl -= (int) shift;
+    bool x_reflect = false, y_reflect = false;
+    if (x < GlobalVariables.map_geometry.x) {
+        bullet->geometry.x = 2 * GlobalVariables.map_geometry.x - bullet->geometry.x;
+        y_reflect = true;
     }
+    if (y < GlobalVariables.map_geometry.y) {
+        bullet->geometry.y = 2 * GlobalVariables.map_geometry.y - bullet->geometry.y;
+        x_reflect = true;
+    }
+    if (x + w > GlobalVariables.map_geometry.x + GlobalVariables.map_geometry.width) {
+        bullet->geometry.x -= 2 * (x + w - GlobalVariables.map_geometry.x - GlobalVariables.map_geometry.width);
+        y_reflect = true;
+    }
+    if (y + h > GlobalVariables.map_geometry.y + GlobalVariables.map_geometry.height) {
+        bullet->geometry.y -= 2 * (y + h - GlobalVariables.map_geometry.y - GlobalVariables.map_geometry.height);
+        x_reflect = true;
+    }
+
+    if (x_reflect) {
+        bullet->angle = 180 - bullet->angle;
+    }
+    if (y_reflect) {
+        bullet->angle = -bullet->angle;
+    }
+}
+
+void bullet_collision(Bullet *bullet, Player players[PLAYER_COUNT]/*, Object *objects,*/)
+{
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        if (players[i].is_alive && !geometry_rect_rect_collision_check(bullet->geometry, false, players[i].geometry)) {
+            players[i].is_alive = false;
+            bullet->ttl = 0;
+        }
+    }
+}
+
+void bullet_move(Bullet *bullet, unsigned delta_ticks, Player players[PLAYER_COUNT])
+{
+    float shift = (float) delta_ticks / 1000 * BULLET_VELOCITY;
+    bullet->geometry.x += shift * sin(deg_to_rad(bullet->angle));
+    bullet->geometry.y -= shift * cos(deg_to_rad(bullet->angle));
+    bullet->ttl -= shift;
+
+    bullet_collision(bullet, players/*, objects,*/);
+    bullet_reflect(bullet);
 }
 
 void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer, Camera *camera)
@@ -121,12 +168,12 @@ void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer,
                       bullet->angle);
 }
 
-void bullets_apply_response(Bullets *bullets, BulletsStateResponse *response)
+void bullets_apply_response(Bullets *bullets, BulletsStateResponse *state)
 {
-    bullets->number = response->number;
+    bullets->number = state->number;
     for (unsigned i = 0; i < bullets->number; ++i) {
-        Bullet *bullet = &bullets->bullets[i];
-        BulletStateResponse *bulletStateResponse = &response->bullets[i];
+        Bullet *bullet = bullets->bullets + i;
+        BulletStateResponse *bulletStateResponse = state->bullets + i;
         bullet->ttl = bulletStateResponse->ttl;
         bullet->angle = bulletStateResponse->angle;
         bullet->geometry.x = bulletStateResponse->position.x;
@@ -134,7 +181,7 @@ void bullets_apply_response(Bullets *bullets, BulletsStateResponse *response)
     }
 }
 
-bool bullets_add_bullet(Bullets *bullets, Vector2f position, double angle)
+bool bullets_add_bullet(Bullets *bullets, Vector2f position, int angle)
 {
     if (bullets->number == BULLET_MAX_AMOUNT) {
         return false;

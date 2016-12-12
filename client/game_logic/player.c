@@ -2,14 +2,14 @@
 // Created by moonlightnvkz on 10.11.16.
 //
 
+#include <assert.h>
 #include <math.h>
 #include <SDL_mouse.h>
 #include <SDL_timer.h>
-#include <assert.h>
 #include "../loggers.h"
+#include "sdl_helpers.h"
 #include "player.h"
 #include "bullets.h"
-#include "sdl_helpers.h"
 #include "../server_logic/request_response.h"
 #include "../my_deque.h"
 #include "camera.h"
@@ -25,12 +25,14 @@ static void player_move_to(Player *player, float x, float y);
 bool player_create(Player *player, SDL_Renderer *renderer)
 {
     assert(player != NULL);
+
     GlobalVariables.number_of_player = 0;
+    player->is_alive = true;
     player->geometry.x = PLAYER_X;
     player->geometry.y = PLAYER_Y;
     player->geometry.width = PLAYER_WIDTH;
     player->geometry.height = PLAYER_HEIGHT;
-    player->angle = 0.0;
+    player->angle = 0;
     player->velocity.x = 0;
     player->velocity.y = 0;
     player->shot_done = false;
@@ -66,26 +68,18 @@ static void player_move_to(Player *player, float x, float y)
     player->geometry.y = y;
 }
 
-static bool player_collision_check_x(Player *player, float dx)
-{
-    float new_x = player->geometry.x + dx;
-    return (new_x > 0 &&
-            new_x + player->geometry.width  < MAP_WIDTH);
-}
-
-static bool player_collision_check_y(Player *player, float dy)
-{
-    float new_y = player->geometry.x + dy;
-    return (new_y > 0 &&
-            new_y + player->geometry.height  < MAP_HEIGHT);
-}
-
 static void player_move_on(Player *player, float dx, float dy)
 {
-    if (player_collision_check_x(player, dy)) {
+    ObjectGeometry new_geom = {player->geometry.x + dx,
+                               player->geometry.y,
+                               player->geometry.width,
+                               player->geometry.height};
+    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
         player->geometry.x += dx;
     }
-    if (player_collision_check_y(player, dy)) {
+    new_geom.x -= dx;
+    new_geom.y += dy;
+    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
         player->geometry.y += dy;
     }
 }
@@ -108,22 +102,22 @@ void player_render(Player *player, SDL_Renderer *renderer, Camera *camera)
 void player_keystates_process(Player *player, const Uint8 *keystates)
 {
     player->velocity.x = player->velocity.y = 0;
-    if (keystates[SDL_SCANCODE_UP])
+    if (keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_W])
     {
         player->velocity.x += PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
         player->velocity.y -= PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
     }
-    if (keystates[SDL_SCANCODE_DOWN])
+    if (keystates[SDL_SCANCODE_DOWN] || keystates[SDL_SCANCODE_S])
     {
         player->velocity.x -= PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
         player->velocity.y += PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
     }
-    if (keystates[SDL_SCANCODE_LEFT])
+    if (keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
     {
         player->velocity.x -= PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
         player->velocity.y -= PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
     }
-    if (keystates[SDL_SCANCODE_RIGHT])
+    if (keystates[SDL_SCANCODE_RIGHT] || keystates[SDL_SCANCODE_D])
     {
         player->velocity.x += PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
         player->velocity.y += PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
@@ -146,8 +140,8 @@ void player_do_shot(Player *player, Bullets *bullets)
     if (time - player->last_shot_time < 1.f / PLAYER_FIRE_RATE * 1000) {
         return;
     }
-    Vector2f bullet_pos = {player->geometry.x + player->geometry.width / 2.f,
-                           player->geometry.y + player->geometry.width / 2.f};
+    Vector2f bullet_pos = {player->geometry.x + player->geometry.width  / 2.f,
+                           player->geometry.y + player->geometry.height / 2.f};
     if (bullets_add_bullet(bullets, bullet_pos, player->angle)) {
         player->shot_done = true;
         player->last_shot_time = time;

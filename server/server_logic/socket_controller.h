@@ -15,8 +15,6 @@ typedef enum eScErrors {
     SC_SEND_FAILED,
     SC_CONNECTION_CLOSED,
     SC_CONNECTION_FAILED,
-    SC_START_SIGNAL_MATHCHING_ERROR,
-    SC_SOCKET_CREATION_ERROR,
     SC_UNSUPPORTED_PLAYER
 } ScErrors;
 
@@ -29,7 +27,7 @@ typedef struct tSocketController {
     ResponseStructure response;
 } SocketController;
 
-SocketController *sc_init();
+bool sc_init(SocketController *sc);
 
 void sc_destroy(SocketController *sc);
 

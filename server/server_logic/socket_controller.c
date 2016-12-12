@@ -5,22 +5,20 @@
 #include <malloc.h>
 #include <sys/socket.h>
 #include <unistd.h>    //write
+#include <assert.h>
 #include "../default_values.h"
 #include "socket_controller.h"
 #include "../loggers.h"
 #include "../game_logic/model_controller.h"
 
-SocketController *sc_init()
+bool sc_init(SocketController *sc)
 {
-    SocketController *sc = malloc(sizeof(SocketController));
-    if (sc == NULL) {
-        log_error("Failed to allocate memory for socket controller", __FUNCTION__, __LINE__);
-        return NULL;
-    }
+    assert(sc != NULL);
+
     sc->socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (sc->socket_desc == -1) {
         log_error("Failed to create socket", __FUNCTION__, __LINE__);
-        return NULL;
+        return false;
     }
     sc->server.sin_family = AF_INET;
     sc->server.sin_addr.s_addr = inet_addr(SERVER_IP);
@@ -31,7 +29,7 @@ SocketController *sc_init()
     }
     if (bind(sc->socket_desc, (struct sockaddr *) &sc->server, sizeof(sc->server)) < 0) {
         log_error("Failed to bind", __FUNCTION__, __LINE__);
-        return NULL;
+        return false;
     }
 
     listen(sc->socket_desc , 3);
@@ -39,7 +37,7 @@ SocketController *sc_init()
     char msg[50];
     sprintf(msg, "Server listen at %d:%d", INADDR_ANY, SERVER_PORT);
     log_action(msg, __FUNCTION__, __LINE__);
-    return sc;
+    return true;
 }
 
 void sc_destroy(SocketController *sc)
@@ -49,7 +47,6 @@ void sc_destroy(SocketController *sc)
         close(sc->player_sockets[i]);
     }
     close(sc->socket_desc);
-    free(sc);
 }
 
 int sc_accept_player(SocketController *sc, unsigned number_of_player)
@@ -85,7 +82,6 @@ int sc_receive_request(SocketController *sc, unsigned number_of_player)
         char msg[50];
         sprintf(msg, "Player %d disconnected", number_of_player);
         log_action(msg, __FUNCTION__, __LINE__);
-        fflush(stdout);
         return SC_CONNECTION_CLOSED;
     }
     else if(read_size == -1) {
@@ -99,8 +95,8 @@ int sc_receive_request(SocketController *sc, unsigned number_of_player)
 void sc_create_responses(SocketController *sc, ModelController *mc)
 {
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
-        response_set_player_states(&sc->response.players[i], mc->players[i]);
-        response_set_bullets_states(&sc->response.bullets, mc->bullets);
+        response_set_player_states(&sc->response.players[i], mc->players + i);
+        response_set_bullets_states(&sc->response.bullets, &mc->bullets);
     }
 }
 
@@ -113,7 +109,6 @@ int sc_send_response(SocketController *sc, unsigned number_of_player)
     sc->response.res_number = sc->request_numbers[number_of_player];
     if(send(sc->player_sockets[number_of_player], &sc->response, sizeof(ResponseStructure), MSG_DONTWAIT) < sizeof(ResponseStructure))
     {
-        puts("1");
         char msg[50];
         sprintf(msg, "Send failed (player %d)", number_of_player);
         log_error(msg, __FUNCTION__, __LINE__);

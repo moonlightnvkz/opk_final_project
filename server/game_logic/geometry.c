@@ -5,32 +5,31 @@
 #include <math.h>
 #include "geometry.h"
 
-bool Rect_is_intersects(IntRect rect1, IntRect rect2)
+#ifndef M_PI
+#define M_PI 3.14159265358979323846	/* pi */
+#endif
+
+bool geometry_rect_rect_collision_check(ObjectGeometry rect1, bool is_rect1_inside_rect2, ObjectGeometry rect2)
 {
-    return !(rect1.x + rect1.width  < rect2.x ||
-             rect1.y + rect1.height < rect2.y ||
-             rect2.x + rect2.width  < rect1.x ||
-             rect2.y + rect2.height < rect2.y);
+    if (is_rect1_inside_rect2) {
+        return rect1.x > rect2.x &&
+               rect1.y > rect2.y &&
+               rect1.x + rect1.width  < rect2.x + rect2.width &&
+               rect1.y + rect1.height < rect2.y + rect2.height;
+    } else {
+        return rect1.x + rect1.width  < rect2.x ||
+               rect2.x + rect2.width  < rect1.x ||
+               rect1.y + rect1.height < rect2.y ||
+               rect2.y + rect2.height < rect1.y;
+    }
 }
 
-bool Circle_Rect_intersects(IntCircle circle, IntRect rect)
+double rad_to_deg(double rad)
 {
-    Vector2i circleDistance;
-    circleDistance.x = abs(circle.x - rect.x);
-    circleDistance.y = abs(circle.y - rect.y);
+    return rad / M_PI * 180;
+}
 
-    if (circleDistance.x > (rect.width/2  + circle.radius) ||
-        circleDistance.y > (rect.height/2 + circle.radius)) {
-        return false;
-    }
-
-    if (circleDistance.x <= (rect.width/2 ) ||
-        circleDistance.y <= (rect.height/2)) {
-        return true;
-    }
-
-    float cornerDistance_sq = (circleDistance.x - rect.width /2)^2 +
-                                                                 (circleDistance.y - rect.height/2)^2;
-
-    return (cornerDistance_sq <= (circle.radius^2));
+double deg_to_rad(double deg)
+{
+    return deg / 180 * M_PI;
 }

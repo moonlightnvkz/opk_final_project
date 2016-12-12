@@ -15,17 +15,14 @@ typedef struct tDeque Deque;
 typedef struct tCamera Camera;
 
 typedef struct tPlayer {
+    bool is_alive;
     ObjectGeometry geometry;
     SDL_Texture *texture;
-    double angle;
+    int angle;
     Vector2i velocity;
     bool shot_done;         // on this loop. After request is sent, shot_done -> false
     unsigned last_shot_time;
 } Player;
-
-struct tGlobalVariables {
-    unsigned number_of_player;
-} GlobalVariables;
 
 bool player_create(Player *player, SDL_Renderer *renderer);
 

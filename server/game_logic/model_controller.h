@@ -5,18 +5,18 @@
 #pragma once
 
 #include "../default_values.h"
+#include "bullets.h"
+#include "player.h"
 
 typedef struct tRequestStructure RequestStructure;
 typedef struct tResponseStructure ResponseStructure;
-typedef struct tPlayer Player;
-typedef struct tBullets Bullets;
 
 typedef struct tModelController {
-    Player *players[PLAYER_COUNT];
-    Bullets *bullets;
+    Player players[PLAYER_COUNT];
+    Bullets bullets;
 } ModelController;
 
-ModelController *mc_init();
+bool mc_init(ModelController *mc);
 
 void mc_destroy(ModelController *mc);
 

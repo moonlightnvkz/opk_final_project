@@ -19,7 +19,7 @@ typedef struct tStartSignal {
 } StartSignal;
 
 typedef struct tPlayerStateRequest {
-    double angle;
+    int angle;
     Vector2f position;
     Vector2i velocity;
     bool shot_done;
@@ -32,15 +32,15 @@ typedef struct tRequestStructure {
 
 
 typedef struct tPlayerStateResponse {
-    double angle;
+    int angle;
     Vector2f position;
     Vector2i velocity;
 } PlayerStateResponse;
 
 typedef struct tBulletStateResponse {
-    Vector2f position;
-    double angle;
+    int angle;
     int ttl;
+    Vector2f position;
 } BulletStateResponse;
 
 typedef struct tBulletsStateResponse {

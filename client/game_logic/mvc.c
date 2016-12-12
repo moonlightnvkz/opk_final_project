@@ -84,15 +84,17 @@ void mvc_render(MVC *mvc)
 {
     SDL_RenderClear(mvc->renderer);
     tilemap_render(&mvc->map, mvc->renderer, &mvc->camera);
-    Vector2f this_player_pos = {mvc->players[GlobalVariables.number_of_player].geometry.x,
-                                mvc->players[GlobalVariables.number_of_player].geometry.y};
+    Vector2f pa_from = {mvc->players[GlobalVariables.number_of_player].geometry.x +
+                                mvc->players[GlobalVariables.number_of_player].geometry.width  / 2.f,
+                        mvc->players[GlobalVariables.number_of_player].geometry.y +
+                                mvc->players[GlobalVariables.number_of_player].geometry.height / 2.f};
 
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         player_render(mvc->players + i, mvc->renderer, &mvc->camera);
         if (i != GlobalVariables.number_of_player) {
-            Vector2f another_player_pos = {mvc->players[i].geometry.x,
-                                           mvc->players[i].geometry.y};
-            camera_render_pointing_arrow(&mvc->camera, mvc->renderer, this_player_pos, another_player_pos);
+            Vector2f pa_to = {mvc->players[i].geometry.x + mvc->players[i].geometry.width  / 2.f,
+                              mvc->players[i].geometry.y + mvc->players[i].geometry.height / 2.f};
+            camera_render_pointing_arrow(&mvc->camera, mvc->renderer, pa_from, pa_to);
         }
     }
     bullets_render_all(&mvc->bullets, mvc->renderer, &mvc->camera);
@@ -120,8 +122,18 @@ void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         player_move(mvc->players + i, delta_ticks);
     }
-    bullets_move_all(&mvc->bullets, delta_ticks);
 
+    bool alive_flag_states[PLAYER_COUNT];
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        alive_flag_states[i] = mvc->players[i].is_alive;
+    }
+    bullets_move_all(&mvc->bullets, delta_ticks, mvc->players);
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        if (alive_flag_states[i] != mvc->players[i].is_alive) {
+            // TODO: CRITICAL EVENT
+            break;
+        }
+    }
     camera_move_after_the_player(&mvc->camera, mvc->players + GlobalVariables.number_of_player);
 }
 

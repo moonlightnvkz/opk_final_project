@@ -23,26 +23,18 @@ void camera_destroy(Camera *camera)
     pa_destroy(&camera->arrow);
 }
 
-static bool camera_collision_check_x(Camera *camera, float dx)
-{
-    float new_x = camera->geometry.x + dx;
-    return (new_x > 0 &&
-            new_x + camera->geometry.width  < MAP_WIDTH);
-}
-
-static bool camera_collision_check_y(Camera *camera, float dy)
-{
-    float new_y = camera->geometry.y + dy;
-    return (new_y > 0 &&
-            new_y + camera->geometry.height  < MAP_HEIGHT);
-}
-
 void camera_move_on(Camera *camera, float dx, float dy)
 {
-    if (camera_collision_check_x(camera, dx)) {
+    ObjectGeometry new_geom = {camera->geometry.x + dx,
+                               camera->geometry.y,
+                               camera->geometry.width,
+                               camera->geometry.height};
+    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
         camera->geometry.x += dx;
     }
-    if (camera_collision_check_y(camera, dy)) {
+    new_geom.x -= dx;
+    new_geom.y += dy;
+    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
         camera->geometry.y += dy;
     }
 }

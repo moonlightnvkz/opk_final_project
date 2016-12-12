@@ -54,7 +54,7 @@ void pa_render(PointingArrow *arrow, Camera *camera, SDL_Renderer *renderer, Vec
     }
     Vector2f rel_pos = get_relative_position(point_from, camera);
     double angle = atan2(point_to.y - point_from.y, point_to.x - point_from.x);
-    int x = (int) (rel_pos.x + POINTING_ARROW_R * cos(angle));
-    int y = (int) (rel_pos.y + POINTING_ARROW_R * sin(angle));
+    int x = (int) (rel_pos.x + POINTING_ARROW_R * cos(angle) - arrow->size.x / 2.f);
+    int y = (int) (rel_pos.y + POINTING_ARROW_R * sin(angle) - arrow->size.y / 2.f);
     render_texture_ex(arrow->texture, renderer, x, y, arrow->size.x, arrow->size.y, (int) rad_to_deg(angle) + 90);
 }

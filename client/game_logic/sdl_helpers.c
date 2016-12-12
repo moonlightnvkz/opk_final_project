@@ -41,5 +41,5 @@ void render_texture_ex(SDL_Texture *texture, SDL_Renderer *renderer, int x, int 
         dst.w = width;
         dst.h = height;
     }
-    SDL_RenderCopyEx(renderer, texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, texture, NULL, &dst, (double) angle, NULL, SDL_FLIP_NONE);
 }

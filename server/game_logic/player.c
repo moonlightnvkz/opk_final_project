@@ -5,10 +5,10 @@
 #include <math.h>
 #include <SDL_mouse.h>
 #include <SDL_timer.h>
+#include <assert.h>
+#include "../default_values.h"
 #include "player.h"
 #include "bullets.h"
-#include "../default_values.h"
-#include "../loggers.h"
 #include "../server_logic/request_response.h"
 
 
@@ -18,30 +18,25 @@
 
 static void player_move_on(Player *player, float dx, float dy);
 
-static void player_move_to(Player *player, float x, float y);
-
-Player *player_create()
+bool player_create(Player * player)
 {
-    Player *player = malloc(sizeof(Player));
-    if (player == NULL) {
-        log_error("Failed to allocate memory for player", __FUNCTION__, __LINE__);
-        exit(1);
-    }
+    assert(player != NULL);
+    player->is_alive = true;
     player->geometry.x = PLAYER_X;
     player->geometry.y = PLAYER_Y;
     player->geometry.width = PLAYER_WIDTH;
     player->geometry.height = PLAYER_HEIGHT;
-    player->angle = 0.0;
+    player->angle = 0;
     player->velocity.x = 0;
     player->velocity.y = 0;
     player->last_request_time = 0;
     player->last_shot_time = 0;
-    return player;
+    return true;
 }
 
 void player_destroy(Player *player)
 {
-    free(player);
+    return;
 }
 
 void player_move(Player *player, unsigned delta_ticks)
@@ -51,25 +46,18 @@ void player_move(Player *player, unsigned delta_ticks)
     player_move_on(player, dx, dy);
 }
 
-static void player_move_to(Player *player, float x, float y)
-{
-    player->geometry.x = x;
-    player->geometry.y = y;
-}
-
-static bool player_collision_check(Player *player, float dx, float dy)
-{
-    Vector2f new_pos = {player->geometry.x + dx, player->geometry.y + dy};
-    return (new_pos.x > 0 &&
-            new_pos.y > 0 &&
-            new_pos.x + player->geometry.width  < MAP_WIDTH &&
-            new_pos.y + player->geometry.height < MAP_HEIGHT);
-}
-
 static void player_move_on(Player *player, float dx, float dy)
 {
-    if (player_collision_check(player, dx, dy)) {
+    ObjectGeometry new_geom = {player->geometry.x + dx,
+                               player->geometry.y,
+                               player->geometry.width,
+                               player->geometry.height};
+    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
         player->geometry.x += dx;
+    }
+    new_geom.x -= dx;
+    new_geom.y += dy;
+    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
         player->geometry.y += dy;
     }
 }
@@ -80,8 +68,10 @@ void player_do_shot(Player *player, Bullets *bullets)
     if (time - player->last_shot_time < (float)1 / PLAYER_FIRE_RATE * 1000) {
         return;
     }
-    Vector2f bullet_pos = {player->geometry.x + player->geometry.width / 2.f,
-                           player->geometry.y + player->geometry.width / 2.f};
+    Vector2f bullet_pos = {player->geometry.x +
+                           player->geometry.width * (float) sin(deg_to_rad(player->angle)) / 2.f,
+                           player->geometry.y +
+                           player->geometry.width * (float) cos(deg_to_rad(player->angle)) / 2.f};
     if (bullets_add_bullet(bullets, bullet_pos, player->angle)) {
         player->last_shot_time = time;
     }

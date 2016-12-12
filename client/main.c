@@ -6,16 +6,25 @@
 #include "server_logic/socket_controller.h"
 #include "game_logic/player.h"
 
-// TODO: collision - DONE: players are now limited in space to window borders
-// TODO: kills
-// TODO: bullet reflection  ???
+// TODO: mvc -> collect every player.is_alive flag change -> if any -> send to the server
+
+// TODO: Shooting according to player sprite. Bullet speed > player speed.
+// TODO: camera(player) -> camera(mouse)
+
+// FIXME: loggers for different types
+
 // TODO: static items with collision
-// TODO: big map with small view (DONE) + arrows pointing to other player(s)
+
 // TODO: EXPLOSIONS!!! (barrels)
+
+// FIXME: SIGPIPE error
+
+// TODO: UI
 
 int main(int argc , char *argv[])
 {
     logger_init();
+    globals_init();
     MVC mvc;
     if (!mvc_init(&mvc)) {
         log_error("Failed to create mvc", __FUNCTION__, __LINE__);

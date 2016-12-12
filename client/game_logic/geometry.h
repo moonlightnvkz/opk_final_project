@@ -36,9 +36,9 @@ typedef struct tIntCircle {
     int radius;
 } IntCircle;
 
-bool geometry_rect_rect_intersects(IntRect rect1, IntRect rect2);
-
-bool geometry_circle_rect_intersects(IntCircle circle, IntRect rect);
+bool geometry_rect_rect_collision_check(ObjectGeometry rect1,
+                                        bool is_rect1_inside_rect2,
+                                        ObjectGeometry rect2);
 
 double rad_to_deg(double rad);
 

@@ -33,7 +33,7 @@ bool sc_init(SocketController *sc)
     sc->last_response.bullets.number = 0;
     for (int i = 0; i < BULLET_MAX_AMOUNT; ++i) {
         BulletStateResponse *bullet = sc->last_response.bullets.bullets + i;
-        bullet->angle = 0.0;
+        bullet->angle = 0;
         bullet->position.x = bullet->position.y = 0;
         bullet->ttl = 0;
     }

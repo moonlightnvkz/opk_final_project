@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "game_logic/geometry.h"
+
 #define WINDOW_WIDTH                640
 #define WINDOW_HEIGHT               480
 
@@ -14,7 +16,7 @@
 #define CAMERA_TRACK_DELAY_X        200
 #define CAMERA_TRACK_DELAY_Y        200
 
-#define POINTING_ARROW_R            100
+#define POINTING_ARROW_R            200
 #define POINTING_ARROW_WIDTH        40
 #define POINTING_ARROW_HEIGHT       120
 
@@ -33,10 +35,10 @@
 #define PLAYER_COUNT                2
 
 #define BULLET_VELOCITY             600
-#define BULLET_MAX_AMOUNT           40
+#define BULLET_MAX_AMOUNT           10
 #define BULLET_WIDTH                12
 #define BULLET_HIEGHT               20
-#define BULLET_TTL                  400 // distance
+#define BULLET_TTL                  200 // distance
 
 #define TILE_TEXTURE                "res/floor_texture.png"
 #define PLAYER_TEXTURE              "res/player_texture.png"
@@ -48,3 +50,11 @@
 #define SERVER_PORT                 8888
 #define SERVER_TICKRATE             20
 #define SERVER_START_SIGNAL         'S'
+
+
+struct tGlobalVariables {
+    unsigned number_of_player;
+    ObjectGeometry map_geometry;
+} GlobalVariables;
+
+void globals_init();
