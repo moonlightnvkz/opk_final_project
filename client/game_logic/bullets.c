@@ -10,6 +10,7 @@
 #include "../server_logic/request_response.h"
 #include "camera.h"
 #include "player.h"
+#include "tile_map.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
@@ -119,13 +120,16 @@ static void bullet_reflect(Bullet *bullet)
     }
 }
 
-void bullet_collision(Bullet *bullet, Player players[PLAYER_COUNT]/*, Object *objects,*/)
+void bullet_collision(Bullet *bullet, Player players[PLAYER_COUNT])
 {
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (players[i].is_alive && !geometry_rect_rect_collision_check(bullet->geometry, false, players[i].geometry)) {
             player_kill(&players[i]);
             bullet->ttl = 0;
         }
+    }
+    if (!tilemap_collision_check(bullet->geometry)) {
+        bullet->ttl = 0;
     }
 }
 
@@ -136,7 +140,7 @@ void bullet_move(Bullet *bullet, unsigned delta_ticks, Player players[PLAYER_COU
     bullet->geometry.y -= shift * cos(deg_to_rad(bullet->angle));
     bullet->ttl -= shift;
 
-    bullet_collision(bullet, players/*, objects,*/);
+    bullet_collision(bullet, players);
     bullet_reflect(bullet);
 }
 

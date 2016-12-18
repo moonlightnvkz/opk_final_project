@@ -1,5 +1,5 @@
 //
-// Created by moonlightnvkz on 05.12.16.
+// Created by moonlightnvkz on 18.12.16.
 //
 
 #pragma once
@@ -27,10 +27,8 @@ typedef struct tTileMap {
     Vector2i tile_size;
 } TileMap;
 
-bool tilemap_create(TileMap *map, SDL_Renderer *renderer);
+bool tilemap_create(TileMap *map);
 
 void tilemap_destroy(TileMap *map);
 
 bool tilemap_collision_check(ObjectGeometry geom);
-
-void tilemap_render(TileMap *map, SDL_Renderer *renderer, Camera *camera);

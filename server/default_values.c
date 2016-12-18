@@ -3,6 +3,7 @@
 //
 
 #include "default_values.h"
+#include "game_logic/tile_map.h"
 
 void globals_init()
 {
@@ -10,4 +11,7 @@ void globals_init()
     GlobalVariables.map_geometry.y = 0;
     GlobalVariables.map_geometry.width = MAP_WIDTH;
     GlobalVariables.map_geometry.height = MAP_HEIGHT;
+    GlobalVariables.map_descr = NULL;
+    GlobalVariables.tile_size.x = 0;
+    GlobalVariables.tile_size.y = 0;
 }

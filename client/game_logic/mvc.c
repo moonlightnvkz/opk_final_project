@@ -147,6 +147,7 @@ void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
 
 void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_response)
 {
+    GlobalVariables.quit = last_response->quit;
     player_apply_response_this(mvc->players + GlobalVariables.number_of_player, requests_list, last_response);
     player_apply_response_others(mvc->players, last_response);
 

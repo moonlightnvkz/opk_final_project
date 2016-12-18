@@ -9,11 +9,11 @@
 
 // FIXME: loggers for different types
 
-// TODO: static items with collision
-
 // TODO: EXPLOSIONS!!! (barrels)
 
 // TODO: UI
+
+// TODO: serialization / deserialization
 
 int main(int argc , char *argv[])
 {
@@ -38,17 +38,16 @@ int main(int argc , char *argv[])
         sc_destroy(&socketController);
         logger_destroy();
     }
-    bool quit = false;
     unsigned curr_ticks = 0, prev_ticks = 0;
     const Uint8 *keystates = SDL_GetKeyboardState(NULL);
-    while (!quit)
+    while (!GlobalVariables.quit)
     {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type)
             {
                 case SDL_QUIT:
-                    quit = true;
+                    GlobalVariables.quit = true;
                     break;
                 default:;
             }

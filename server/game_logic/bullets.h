@@ -13,7 +13,7 @@ typedef struct tPlayer Player;
 
 typedef struct tBullet {
     ObjectGeometry geometry;
-    int angle;   // Velocity is the same for all bullets. Calculates according to the angle;
+    double angle;   // Velocity is the same for all bullets. Calculates according to the angle;
     int ttl;
 } Bullet;
 

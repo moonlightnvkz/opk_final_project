@@ -23,7 +23,7 @@ typedef struct tSocketController {
     int player_sockets[PLAYER_COUNT];
     struct sockaddr_in server;
     unsigned request_numbers[PLAYER_COUNT]; // numbers of request for each player
-    RequestStructure request;
+    RequestStructure request;   // res_number should be set exactly before sending response!
     ResponseStructure response;
 } SocketController;
 
@@ -35,7 +35,7 @@ int sc_accept_player(SocketController *sc, unsigned number_of_player);
 
 int sc_receive_request(SocketController *sc, unsigned number_of_player);
 
-void sc_create_responses(SocketController *sc, ModelController *mc);
+void sc_create_responses(SocketController *sc, ModelController *mc, bool quit);
 
 int sc_send_response(SocketController *sc, unsigned number_of_player);
 

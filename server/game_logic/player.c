@@ -10,7 +10,7 @@
 #include "player.h"
 #include "bullets.h"
 #include "../server_logic/request_response.h"
-
+#include "tile_map.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
@@ -49,18 +49,27 @@ void player_move(Player *player, unsigned delta_ticks)
     player_move_on(player, dx, dy);
 }
 
-static void player_move_on(Player *player, float dx, float dy)
+static bool player_collision(Player *player, float dx, float dy)
 {
     ObjectGeometry new_geom = {player->geometry.x + dx,
-                               player->geometry.y,
+                               player->geometry.y + dy,
                                player->geometry.width,
                                player->geometry.height};
-    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
+    if (!geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
+        return false;
+    }
+    if (!tilemap_collision_check(new_geom)) {
+        return false;
+    }
+    return true;
+}
+
+static void player_move_on(Player *player, float dx, float dy)
+{
+    if (player_collision(player, dx, 0)) {
         player->geometry.x += dx;
     }
-    new_geom.x -= dx;
-    new_geom.y += dy;
-    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
+    if (player_collision(player, 0, dy)) {
         player->geometry.y += dy;
     }
 }

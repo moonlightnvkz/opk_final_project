@@ -48,7 +48,7 @@ int main(int argc , char *argv[])
 
     unsigned curr_ticks = 0, prev_ticks = 0;
     bool quit = false;
-    while(!quit) {
+    while(true) {
         for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
             int res;
             res = sc_receive_request(&sc, i);
@@ -60,12 +60,18 @@ int main(int argc , char *argv[])
                 request_log(&sc.request, "Request", __FUNCTION__, __LINE__);
                 mc_apply_request(&mc, i, &sc.request);
 
-                sc_create_responses(&sc, &mc);
+                sc_create_responses(&sc, &mc, quit);
                 sc_send_response(&sc, i);
                 response_log(&sc.response, "Response", __FUNCTION__, __LINE__);
             }
         }
+        if (quit) { // quit should be there because of sc_create_response(..., ..., quit);
+            break;
+        }
         mc_process_moving(&mc, curr_ticks - prev_ticks);
+        if (mc_alive_players_count(&mc) <= PLAYERS_ALIVE_TO_END_THE_GAME) {
+            quit = true;
+        }
         prev_ticks = curr_ticks;
         curr_ticks = SDL_GetTicks();
     }

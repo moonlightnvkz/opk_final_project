@@ -92,12 +92,13 @@ int sc_receive_request(SocketController *sc, unsigned number_of_player)
     return SC_NO_ERROR;
 }
 
-void sc_create_responses(SocketController *sc, ModelController *mc)
+void sc_create_responses(SocketController *sc, ModelController *mc, bool quit)
 {
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
         response_set_player_states(&sc->response.players[i], mc->players + i);
         response_set_bullets_states(&sc->response.bullets, &mc->bullets);
     }
+    sc->response.quit = quit;
 }
 
 int sc_send_response(SocketController *sc, unsigned number_of_player)

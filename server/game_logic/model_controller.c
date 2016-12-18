@@ -18,14 +18,20 @@ bool mc_init(ModelController *mc)
     assert(mc != NULL);
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
         if (!player_create(mc->players + i)) {
-            log_error("Failed to allocate memory for player1", __FUNCTION__, __LINE__);
+            log_error("Failed to create player", __FUNCTION__, __LINE__);
             mc_destroy(mc);
             return false;
         }
     }
 
     if (!bullets_create(&mc->bullets)) {
-        log_error("Failed to allocate memory for bullets", __FUNCTION__, __LINE__);
+        log_error("Failed to cerate bullets", __FUNCTION__, __LINE__);
+        mc_destroy(mc);
+        return false;
+    }
+
+    if (!tilemap_create(&mc->map)) {
+        log_error("Failed to create tile_map", __FUNCTION__, __LINE__);
         mc_destroy(mc);
         return false;
     }
@@ -38,6 +44,7 @@ void mc_destroy(ModelController *mc)
         player_destroy(mc->players + i);
     }
     bullets_destroy(&mc->bullets);
+    tilemap_destroy(&mc->map);
 }
 
 void mc_process_moving(ModelController *mc, unsigned delta_ticks)
@@ -46,6 +53,17 @@ void mc_process_moving(ModelController *mc, unsigned delta_ticks)
         player_move(mc->players + i, delta_ticks);
     }
     bullets_move_all(&mc->bullets, delta_ticks, mc->players);
+}
+
+int mc_alive_players_count(ModelController *mc)
+{
+    unsigned count = 0;
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        if (mc->players[i].is_alive) {
+            count++;
+        }
+    }
+    return count;
 }
 
 void mc_apply_request(ModelController *mc, unsigned number_of_player, RequestStructure *request)

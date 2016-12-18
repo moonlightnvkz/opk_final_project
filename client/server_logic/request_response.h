@@ -58,6 +58,7 @@ typedef struct tBulletsStateResponse {
 } BulletsStateResponse;
 
 typedef struct tResponseStructure {
+    bool quit;
     unsigned res_number;
     PlayerStateResponse players[PLAYER_COUNT];
     BulletsStateResponse bullets;

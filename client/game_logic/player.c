@@ -13,6 +13,7 @@
 #include "../server_logic/request_response.h"
 #include "../my_deque.h"
 #include "camera.h"
+#include "tile_map.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
@@ -28,8 +29,8 @@ bool player_create(Player *player, SDL_Renderer *renderer)
 
     GlobalVariables.number_of_player = 0;
     player->is_alive = true;
-    player->geometry.x = PLAYER_X;
-    player->geometry.y = PLAYER_Y;
+    player->geometry.x = PLAYER_START_X;
+    player->geometry.y = PLAYER_START_Y;
     player->geometry.width = PLAYER_WIDTH;
     player->geometry.height = PLAYER_HEIGHT;
     player->angle = 0;
@@ -70,18 +71,27 @@ static void player_move_to(Player *player, float x, float y)
     player->geometry.y = y;
 }
 
-static void player_move_on(Player *player, float dx, float dy)
+static bool player_collision_check(Player *player, float dx, float dy)
 {
     ObjectGeometry new_geom = {player->geometry.x + dx,
-                               player->geometry.y,
+                               player->geometry.y + dy,
                                player->geometry.width,
                                player->geometry.height};
-    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
+    if (!geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
+        return false;
+    }
+    if (!tilemap_collision_check(new_geom)) {
+        return false;
+    }
+    return true;
+}
+
+static void player_move_on(Player *player, float dx, float dy)
+{
+    if (player_collision_check(player, dx, 0)) {
         player->geometry.x += dx;
     }
-    new_geom.x -= dx;
-    new_geom.y += dy;
-    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
+    if (player_collision_check(player, 0, dy)) {
         player->geometry.y += dy;
     }
 }
