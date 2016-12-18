@@ -16,4 +16,5 @@ void globals_init()
     GlobalVariables.map_descr = NULL;
     GlobalVariables.tile_size.x = 0;
     GlobalVariables.tile_size.y = 0;
+    GlobalVariables.map = NULL;
 }

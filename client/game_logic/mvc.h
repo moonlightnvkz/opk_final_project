@@ -13,6 +13,7 @@
 #include "player.h"
 #include "bullets.h"
 #include "../server_logic/request_response.h"
+#include "explosive.h"
 
 typedef struct tResponseStructure ResponseStructure;
 
@@ -29,7 +30,6 @@ typedef struct tMVC {
     TileMap map;
     Player players[PLAYER_COUNT];
     Bullets bullets;
-
     CriticalEvent criticalEvent;
 } MVC;
 

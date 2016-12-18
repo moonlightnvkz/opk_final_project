@@ -8,6 +8,7 @@
 #include "../default_values.h"
 #include "sdl_helpers.h"
 #include "camera.h"
+#include "explosive.h"
 
 bool tilemap_load_from_file(TileMap *map, const char * file_path);
 
@@ -31,6 +32,7 @@ bool tilemap_create(TileMap *map, SDL_Renderer *renderer)
     }
 
     GlobalVariables.map_descr = &map->map_descr;
+
     char tile_path[] = TILE_TEXTURE;
     for (unsigned i = 0; i < MAP_TILE_NUMBER; ++i) {
         Tile *tile = &map->tiles[i];
@@ -41,10 +43,28 @@ bool tilemap_create(TileMap *map, SDL_Renderer *renderer)
             tile->texture = load_texture(MISSING_TEXTURE, renderer);
             if (tile->texture == NULL) {
                 log_error("Failed to load <missing_texture>", __FUNCTION__, __LINE__);
+                tilemap_destroy(map);
                 return false;
             }
         }
     }
+
+    if (!explosives_create(&map->explosives, renderer)) {
+        log_error("Failed to create explosives", __FUNCTION__, __LINE__);
+        tilemap_destroy(map);
+        return false;
+    }
+
+    for (unsigned w = 0; w < map->map_descr.width; ++w)
+    {
+        for (unsigned h = 0; h < map->map_descr.height; ++h)
+        {
+            if (map->map_descr.map_descr[h][w] == TM_EXPLOSIVE) {
+                exposives_add_explosive(&map->explosives, w, h);
+            }
+        }
+    }
+    GlobalVariables.map = map;
     return true;
 }
 
@@ -53,6 +73,7 @@ void tilemap_destroy(TileMap *map)
     for (unsigned i = 0; i < MAP_TILE_NUMBER; ++i) {
         SDL_DestroyTexture(map->tiles[i].texture);
     }
+    explosives_destroy(&map->explosives);
 }
 
 bool tilemap_load_from_file(TileMap *map, const char * file_path)
@@ -92,7 +113,11 @@ bool tilemap_collision_check(ObjectGeometry geom)
 
     for (int i = tile_x1; i <= tile_x2; ++i) {
         for (int j = tile_y1; j <= tile_y2; ++j) {
-            if (map_descr->map_descr[j][i] != 0) {
+            if (map_descr->map_descr[j][i] == TM_BLOCK) {
+                return false;
+            }
+            if (map_descr->map_descr[j][i] == TM_EXPLOSIVE) {
+                explosive_on_damage(explosives_get_explosive_on(&GlobalVariables.map->explosives, i, j));
                 return false;
             }
         }
@@ -112,25 +137,19 @@ void tilemap_render(TileMap *map, SDL_Renderer *renderer, Camera *camera) {
             if (th < 0 || th >= map->map_descr.height ||
                 tw < 0 || tw >= map->map_descr.width)
             {
-
                 tile_type = 0;
             } else {
                 tile_type = map->map_descr.map_descr[th][tw];
             }
-            if (tile_type != 0) {
-                render_texture(map->tiles[0].texture,
-                               renderer,
-                               w,
-                               h,
-                               map->tile_size.x,
-                               map->tile_size.y);
+            if (tile_type != TM_FLOOR) {
+                render_texture(map->tiles[0].texture, renderer, w, h, map->tile_size.x, map->tile_size.y);
             }
-            render_texture(map->tiles[tile_type].texture,
-                           renderer,
-                           w,
-                           h,
-                           map->tile_size.x,
-                           map->tile_size.y);
+
+            if (tile_type == TM_EXPLOSIVE) {
+                explosives_render_exposive(explosives_get_explosive_on(&map->explosives, tw, th), renderer, camera);
+            } else {
+                render_texture(map->tiles[tile_type].texture, renderer, w, h, map->tile_size.x, map->tile_size.y);
+            }
         }
     }
 }

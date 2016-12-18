@@ -143,6 +143,7 @@ void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
     }
     //camera_move_after_the_player(&mvc->camera, mvc->players + GlobalVariables.number_of_player);
     camera_move_after_the_mouse(&mvc->camera, &mvc->players[GlobalVariables.number_of_player]);
+    explosives_explode_process(&mvc->map.explosives, delta_ticks, mvc->players);
 }
 
 void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_response)
