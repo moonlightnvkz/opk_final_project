@@ -41,6 +41,9 @@ void player_destroy(Player *player)
 
 void player_move(Player *player, unsigned delta_ticks)
 {
+    if (!player->is_alive) {
+        return;
+    }
     float dx = (float) delta_ticks / 1000 * player->velocity.x;
     float dy = (float) delta_ticks / 1000 * player->velocity.y;
     player_move_on(player, dx, dy);
@@ -64,17 +67,25 @@ static void player_move_on(Player *player, float dx, float dy)
 
 void player_do_shot(Player *player, Bullets *bullets)
 {
+    if (!player->is_alive) {
+        return;
+    }
     unsigned time = SDL_GetTicks();
     if (time - player->last_shot_time < (float)1 / PLAYER_FIRE_RATE * 1000) {
         return;
     }
-    Vector2f bullet_pos = {player->geometry.x +
-                           player->geometry.width * (float) sin(deg_to_rad(player->angle)) / 2.f,
-                           player->geometry.y +
-                           player->geometry.width * (float) cos(deg_to_rad(player->angle)) / 2.f};
+    Vector2f bullet_pos = {player->geometry.x + player->geometry.width  / 2.f +
+                           PLAYER_FIRE_START_DISTANCE * (float)sin(deg_to_rad(player->angle)),
+                           player->geometry.y + player->geometry.height / 2.f -
+                           PLAYER_FIRE_START_DISTANCE * (float)cos(deg_to_rad(player->angle))};
     if (bullets_add_bullet(bullets, bullet_pos, player->angle)) {
         player->last_shot_time = time;
     }
+}
+
+void player_kill(Player *player)
+{
+    player->is_alive = false;
 }
 
 void player_apply_request(Player *player, RequestStructure *request)
@@ -85,5 +96,4 @@ void player_apply_request(Player *player, RequestStructure *request)
     player->velocity.x = request->player_state.velocity.x;
     player->velocity.y = request->player_state.velocity.y;
     player->last_request_time = SDL_GetTicks();
-    player->shot_done = request->player_state.shot_done;
 }

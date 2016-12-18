@@ -12,6 +12,7 @@
 #include "tile_map.h"
 #include "player.h"
 #include "bullets.h"
+#include "../server_logic/request_response.h"
 
 typedef struct tResponseStructure ResponseStructure;
 
@@ -28,6 +29,8 @@ typedef struct tMVC {
     TileMap map;
     Player players[PLAYER_COUNT];
     Bullets bullets;
+
+    CriticalEvent criticalEvent;
 } MVC;
 
 bool mvc_init(MVC *mvc);

@@ -35,7 +35,6 @@ bool player_create(Player *player, SDL_Renderer *renderer)
     player->angle = 0;
     player->velocity.x = 0;
     player->velocity.y = 0;
-    player->shot_done = false;
     player->last_shot_time = 0;
     player->texture = load_texture(PLAYER_TEXTURE, renderer);
     if (player->texture == NULL) {
@@ -57,6 +56,9 @@ void player_destroy(Player *player)
 
 void player_move(Player *player, unsigned delta_ticks)
 {
+    if (!player->is_alive) {
+        return;
+    }
     float dx = (float) delta_ticks / 1000 * player->velocity.x;
     float dy = (float) delta_ticks / 1000 * player->velocity.y;
     player_move_on(player, dx, dy);
@@ -92,15 +94,25 @@ Vector2f player_get_relative_position(Player *player, Camera *camera)
 
 void player_render(Player *player, SDL_Renderer *renderer, Camera *camera)
 {
+    if (!player->is_alive) {
+        return;
+    }
     Vector2f rel_pos = player_get_relative_position(player, camera);
-    render_texture_ex(player->texture, renderer,
-                      (int)rel_pos.x,(int)rel_pos.y,
-                      player->geometry.width, player->geometry.height, player->angle);
+    render_texture_ex(player->texture,
+                      renderer,
+                      (int)rel_pos.x,
+                      (int)rel_pos.y,
+                      player->geometry.width,
+                      player->geometry.height,
+                      player->angle);
 }
 
 // delta_time in milliseconds
 void player_keystates_process(Player *player, const Uint8 *keystates)
 {
+    if (!player->is_alive) {
+        return;
+    }
     player->velocity.x = player->velocity.y = 0;
     if (keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_W])
     {
@@ -126,26 +138,41 @@ void player_keystates_process(Player *player, const Uint8 *keystates)
 
 void player_angle_process(Player *player, Camera *camera)
 {
+    if (!player->is_alive) {
+        return;
+    }
     int mouse_x, mouse_y;
     Vector2f rel_pos = player_get_relative_position(player, camera);
     SDL_GetMouseState(&mouse_x, &mouse_y);
     double x = mouse_x - rel_pos.x - player->geometry.width / 2.0;
     double y = mouse_y - rel_pos.y - player->geometry.height / 2.0;
-    player->angle = (int)rad_to_deg(atan2(y, x)) + 90;
+    player->angle = rad_to_deg(atan2(y, x)) + 90.0;
 }
 
-void player_do_shot(Player *player, Bullets *bullets)
+bool player_do_shot(Player *player, Bullets *bullets)
 {
+    if (!player->is_alive) {
+        return false;
+    }
     unsigned time = SDL_GetTicks();
     if (time - player->last_shot_time < 1.f / PLAYER_FIRE_RATE * 1000) {
-        return;
+        return false;
     }
-    Vector2f bullet_pos = {player->geometry.x + player->geometry.width  / 2.f,
-                           player->geometry.y + player->geometry.height / 2.f};
+    Vector2f bullet_pos = {player->geometry.x + player->geometry.width  / 2.f +
+                                   PLAYER_FIRE_START_DISTANCE * (float)sin(deg_to_rad(player->angle)),
+                           player->geometry.y + player->geometry.height / 2.f -
+                                   PLAYER_FIRE_START_DISTANCE * (float)cos(deg_to_rad(player->angle))};
     if (bullets_add_bullet(bullets, bullet_pos, player->angle)) {
-        player->shot_done = true;
         player->last_shot_time = time;
+        return true;
+    } else {
+        return false;
     }
+}
+
+void player_kill(Player *player)
+{
+    player->is_alive = false;
 }
 
 void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response) {
@@ -166,6 +193,7 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
     player_move_to(player,
                    response->players[GlobalVariables.number_of_player].position.x,
                    response->players[GlobalVariables.number_of_player].position.y);
+    player->is_alive = response->players[GlobalVariables.number_of_player].is_alive;
 
     // This request should be deleted, so there is special processing
     RequestStructure *request = (RequestStructure *) deque_remove_first(requests_list);
@@ -204,6 +232,7 @@ void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructur
         }
         PlayerStateResponse *res = &response->players[i];
         players[i].angle = res->angle;
+        players[i].is_alive = res->is_alive;
         players[i].geometry.x = res->position.x;
         players[i].geometry.y = res->position.y;
         players[i].velocity.x = res->velocity.x;

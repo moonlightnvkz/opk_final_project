@@ -6,9 +6,11 @@
 #include <unistd.h>    //close
 #include <SDL_timer.h>
 #include <assert.h>
+#include <signal.h>
 #include "socket_controller.h"
 #include "../game_logic/player.h"
 #include "../loggers.h"
+#include "../game_logic/mvc.h"
 
 static int sc_connect_to_server(SocketController *sc);
 
@@ -37,6 +39,7 @@ bool sc_init(SocketController *sc)
         bullet->position.x = bullet->position.y = 0;
         bullet->ttl = 0;
     }
+    signal(SIGPIPE, SIG_IGN);
     return true;
 }
 void sc_destroy(SocketController *sc)
@@ -70,10 +73,10 @@ static int sc_connect_to_server(SocketController *sc) {
     return SC_NO_ERROR;
 }
 
-int sc_send_current_state(SocketController *sc, Player *player)
+int sc_send_current_state(SocketController *sc, MVC *mvc)
 {
     static unsigned last_send_time = 0;
-    if (!player->shot_done && last_send_time < 1 / SERVER_TICKRATE * 1000) {
+    if (mvc->criticalEvent.type == CE_NONE && last_send_time < 1 / SERVER_TICKRATE * 1000) {
         return SC_NO_ERROR;
     }
     RequestStructure *peeked = ((RequestStructure *) deque_peek_last(&sc->requests_list));
@@ -83,11 +86,11 @@ int sc_send_current_state(SocketController *sc, Player *player)
     } else {
         last_number = peeked->req_number;
     }
-    RequestStructure *req = request_create(player, last_number + 1);
+    RequestStructure *req = request_create(mvc, last_number + 1);
     deque_add_last(&sc->requests_list, (Pointer) req);
 
     last_send_time = SDL_GetTicks();
-    if (send(sc->sock, req, sizeof(RequestStructure), MSG_DONTWAIT) < 0) {
+    if (send(sc->sock, req, sizeof(RequestStructure), MSG_DONTWAIT | MSG_NOSIGNAL) < 0) {
         log_error("Send failed", __FUNCTION__, __LINE__);
         return SC_SEND_FAILED;
     }

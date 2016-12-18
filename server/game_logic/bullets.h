@@ -28,4 +28,4 @@ void bullets_destroy(Bullets *bullets);
 
 void bullets_move_all(Bullets *bullets, unsigned delta_ticks, Player *players);
 
-bool bullets_add_bullet(Bullets *bullets, Vector2f position, int angle);
+bool bullets_add_bullet(Bullets *bullets, Vector2f position, double angle);

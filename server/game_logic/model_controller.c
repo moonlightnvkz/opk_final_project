@@ -11,7 +11,7 @@
 #include "../loggers.h"
 #include "../default_values.h"
 
-void mc_check_request_and_fix(Player *player, RequestStructure *request);
+void mc_check_request_and_fix(ModelController *mc, unsigned number_of_player, RequestStructure *request);
 
 bool mc_init(ModelController *mc)
 {
@@ -48,16 +48,22 @@ void mc_process_moving(ModelController *mc, unsigned delta_ticks)
     bullets_move_all(&mc->bullets, delta_ticks, mc->players);
 }
 
-void mc_apply_request(ModelController *mc, Player *player, RequestStructure *request)
+void mc_apply_request(ModelController *mc, unsigned number_of_player, RequestStructure *request)
 {
-    mc_check_request_and_fix(player, request);
-    player_apply_request(player, request);
-    if (request->player_state.shot_done) {
-        player_do_shot(player, &mc->bullets);
+    mc_check_request_and_fix(mc, number_of_player, request);
+
+    player_apply_request(&mc->players[number_of_player], request);
+    if (request->critical_event.type == CE_SHOT_DONE && request->critical_event.number_of_player == number_of_player) {
+        player_do_shot(&mc->players[number_of_player], &mc->bullets);
+    }
+    if (request->critical_event.type == CE_DEATH) {
+        player_kill(&mc->players[request->critical_event.number_of_player]);
     }
 }
 
-void mc_check_request_and_fix(Player *player, RequestStructure *request) {
+void mc_check_request_and_fix(ModelController *mc, unsigned number_of_player, RequestStructure *request)
+{
+    Player *player = &mc->players[number_of_player];
     if (request->player_state.velocity.x > PLAYER_VELOCITY) {
         request->player_state.velocity.x = PLAYER_VELOCITY;
     }
@@ -75,15 +81,8 @@ void mc_check_request_and_fix(Player *player, RequestStructure *request) {
         request->player_state.position.y = request->player_state.position.y +
                                            (float) time_elapsed / 1000 * PLAYER_VELOCITY;
     }
-    if (request->player_state.shot_done && (SDL_GetTicks() - player->last_shot_time < (float) 1000 / PLAYER_FIRE_RATE)) {
+    if (request->critical_event.type == CE_SHOT_DONE && (SDL_GetTicks() - player->last_shot_time < (float) 1000 / PLAYER_FIRE_RATE)) {
         log_error("Too high firerate", __FUNCTION__, __LINE__);
-        request->player_state.shot_done = false;
-    }
-}
-
-void mc_reset_temp_flags(ModelController *mc)
-{
-    for (size_t i = 0; i < PLAYER_COUNT; ++i) {
-        mc->players[i].shot_done = false;
+        request->critical_event.type = CE_NONE;
     }
 }

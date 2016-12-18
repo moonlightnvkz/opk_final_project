@@ -3,8 +3,8 @@
 //
 
 #include <SDL_image.h>
-#include "mvc.h"
 #include "../server_logic/request_response.h"
+#include "mvc.h"
 #include "../loggers.h"
 
 bool mvc_init(MVC *mvc)
@@ -59,6 +59,9 @@ bool mvc_init(MVC *mvc)
         mvc_destroy(mvc);
         return false;
     }
+
+    mvc->criticalEvent.type = CE_NONE;
+    mvc->criticalEvent.number_of_player = 0;
     return true;
 }
 
@@ -112,7 +115,10 @@ int mvc_process_key(MVC *mvc, const Uint8 *keystates)
     player_keystates_process(mvc->players + GlobalVariables.number_of_player, keystates);
 
     if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
-        player_do_shot(mvc->players + GlobalVariables.number_of_player, &mvc->bullets);
+        if (player_do_shot(mvc->players + GlobalVariables.number_of_player, &mvc->bullets)) {
+            mvc->criticalEvent.type = CE_SHOT_DONE;
+            mvc->criticalEvent.number_of_player = GlobalVariables.number_of_player;
+        }
     }
     return MVC_NO_ERRORS;
 }
@@ -130,11 +136,13 @@ void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
     bullets_move_all(&mvc->bullets, delta_ticks, mvc->players);
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (alive_flag_states[i] != mvc->players[i].is_alive) {
-            // TODO: CRITICAL EVENT
+            mvc->criticalEvent.type = CE_DEATH;
+            mvc->criticalEvent.number_of_player = i;
             break;
         }
     }
-    camera_move_after_the_player(&mvc->camera, mvc->players + GlobalVariables.number_of_player);
+    //camera_move_after_the_player(&mvc->camera, mvc->players + GlobalVariables.number_of_player);
+    camera_move_after_the_mouse(&mvc->camera, &mvc->players[GlobalVariables.number_of_player]);
 }
 
 void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_response)

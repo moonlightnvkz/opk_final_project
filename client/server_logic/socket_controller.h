@@ -7,7 +7,7 @@
 #include "../my_deque.h"
 #include "request_response.h"
 
-typedef struct tPlayer Player;
+typedef struct tMVC MVC;
 
 typedef enum eScReturnCodes {
     SC_NO_ERROR,
@@ -31,7 +31,7 @@ bool sc_init(SocketController *sc);
 
 void sc_destroy(SocketController *sc);
 
-int sc_send_current_state(SocketController *sc, Player *player);
+int sc_send_current_state(SocketController *sc, MVC *mvc);
 
 // @return:
 // 0 - all is Ok

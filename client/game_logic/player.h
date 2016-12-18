@@ -18,15 +18,16 @@ typedef struct tPlayer {
     bool is_alive;
     ObjectGeometry geometry;
     SDL_Texture *texture;
-    int angle;
+    double angle;
     Vector2i velocity;
-    bool shot_done;         // on this loop. After request is sent, shot_done -> false
     unsigned last_shot_time;
 } Player;
 
 bool player_create(Player *player, SDL_Renderer *renderer);
 
 void player_destroy(Player *player);
+
+Vector2f player_get_relative_position(Player *player, Camera *camera);
 
 void player_keystates_process(Player *player, const Uint8 *keystates);
 
@@ -36,7 +37,9 @@ void player_move(Player *player, unsigned delta_ticks);
 
 void player_render(Player *player, SDL_Renderer *renderer, Camera *camera);
 
-void player_do_shot(Player *player, Bullets *bullets);
+bool player_do_shot(Player *player, Bullets *bullets);
+
+void player_kill(Player *player);
 
 void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response);
 

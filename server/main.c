@@ -58,15 +58,13 @@ int main(int argc , char *argv[])
             }
             if (res == SC_NO_ERROR) {
                 request_log(&sc.request, "Request", __FUNCTION__, __LINE__);
-                mc_apply_request(&mc, mc.players + i, &sc.request);
+                mc_apply_request(&mc, i, &sc.request);
 
                 sc_create_responses(&sc, &mc);
                 sc_send_response(&sc, i);
                 response_log(&sc.response, "Response", __FUNCTION__, __LINE__);
             }
         }
-
-        mc_reset_temp_flags(&mc);
         mc_process_moving(&mc, curr_ticks - prev_ticks);
         prev_ticks = curr_ticks;
         curr_ticks = SDL_GetTicks();

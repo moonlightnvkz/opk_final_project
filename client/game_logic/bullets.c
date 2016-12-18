@@ -23,7 +23,7 @@ bool bullets_create(Bullets *bullets, SDL_Renderer *renderer)
     for (size_t i = 0; i < BULLET_MAX_AMOUNT; ++i) {
         bullets->bullets[i].geometry.x = bullets->bullets[i].geometry.y = 0;
         bullets->bullets[i].geometry.width = BULLET_WIDTH;
-        bullets->bullets[i].geometry.height = BULLET_HIEGHT;
+        bullets->bullets[i].geometry.height = BULLET_HEIGHT;
         bullets->bullets[i].angle = 0;
         bullets->bullets[i].ttl = 0;
     }
@@ -123,7 +123,7 @@ void bullet_collision(Bullet *bullet, Player players[PLAYER_COUNT]/*, Object *ob
 {
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (players[i].is_alive && !geometry_rect_rect_collision_check(bullet->geometry, false, players[i].geometry)) {
-            players[i].is_alive = false;
+            player_kill(&players[i]);
             bullet->ttl = 0;
         }
     }
@@ -181,15 +181,16 @@ void bullets_apply_response(Bullets *bullets, BulletsStateResponse *state)
     }
 }
 
-bool bullets_add_bullet(Bullets *bullets, Vector2f position, int angle)
+bool bullets_add_bullet(Bullets *bullets, Vector2f position, double angle)
 {
     if (bullets->number == BULLET_MAX_AMOUNT) {
         return false;
     }
-    bullets->bullets[bullets->number].angle = angle;
-    bullets->bullets[bullets->number].geometry.x = position.x;
-    bullets->bullets[bullets->number].geometry.y = position.y;
-    bullets->bullets[bullets->number].ttl = BULLET_TTL;
+    Bullet *bullet = &bullets->bullets[bullets->number];
+    bullet->angle = angle;
+    bullet->geometry.x = position.x - bullet->geometry.width / 2.f;
+    bullet->geometry.y = position.y - bullet->geometry.height / 2.f;
+    bullet->ttl = BULLET_TTL;
     bullets->number++;
     return true;
 }

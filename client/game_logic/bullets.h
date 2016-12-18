@@ -15,7 +15,7 @@ typedef struct tPlayer Player;
 
 typedef struct tBullet {
     ObjectGeometry geometry;
-    int angle;   // Velocity is the same for all bullets. Calculates according to the angle;
+    double angle;   // Velocity is the same for all bullets. Calculates according to the angle;
     int ttl;
 } Bullet;
 
@@ -37,4 +37,4 @@ void bullet_render(Bullet *bullet, SDL_Texture *texture, SDL_Renderer *renderer,
 
 void bullets_apply_response(Bullets *bullets, BulletsStateResponse *state);
 
-bool bullets_add_bullet(Bullets *bullets, Vector2f position, int angle);
+bool bullets_add_bullet(Bullets *bullets, Vector2f position, double angle);

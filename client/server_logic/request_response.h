@@ -8,7 +8,7 @@
 #include "../game_logic/geometry.h"
 #include "../default_values.h"
 
-typedef struct tPlayer Player;
+typedef struct tMVC MVC;
 
 #pragma pack(push, 1)
 typedef struct tStartSignal {
@@ -17,26 +17,37 @@ typedef struct tStartSignal {
 } StartSignal;
 
 typedef struct tPlayerStateRequest {
-    int angle;
+    double angle;
     Vector2f position;
     Vector2i velocity;
-    bool shot_done;
 } PlayerStateRequest;
+
+typedef enum eCriticalEventType {
+    CE_NONE,
+    CE_SHOT_DONE,
+    CE_DEATH
+} CriticalEventType;
+
+typedef struct tCriticalEvent {
+    CriticalEventType type;
+    unsigned number_of_player;  // player which done event
+} CriticalEvent;
 
 typedef struct tRequestStructure {
     unsigned req_number;
     PlayerStateRequest player_state;
+    CriticalEvent critical_event;
 } RequestStructure;
 
-
 typedef struct tPlayerStateResponse {
-    int angle;
+    double angle;
     Vector2f position;
     Vector2i velocity;
+    bool is_alive;
 } PlayerStateResponse;
 
 typedef struct tBulletStateResponse {
-    int angle;
+    double angle;
     int ttl;
     Vector2f position;
 } BulletStateResponse;
@@ -54,7 +65,7 @@ typedef struct tResponseStructure {
 #pragma pack(pop)
 
 
-RequestStructure *request_create(Player *player, unsigned number);
+RequestStructure *request_create(MVC *mvc, unsigned number);
 
 void request_destroy(RequestStructure *req);
 

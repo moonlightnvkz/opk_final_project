@@ -2,6 +2,7 @@
 // Created by moonlightnvkz on 04.12.16.
 //
 
+#include <SDL_mouse.h>
 #include "camera.h"
 #include "../default_values.h"
 #include "player.h"
@@ -68,6 +69,25 @@ void camera_move_after_the_player(Camera *camera, Player *player)
         shift.y > 0 ? (shift.y -= CAMERA_TRACK_DELAY_Y) : (shift.y += CAMERA_TRACK_DELAY_Y);
     }
     camera_move_on(camera, shift.x, shift.y);
+}
+
+static int signum(double a)
+{
+    return a > 0.001 ? 1 : (a < -0.001 ? -1 : 0);
+}
+
+void camera_move_after_the_mouse(Camera *camera, Player *player)
+{
+    Vector2i mouse_pos;
+    SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
+
+    double s = sin(deg_to_rad(player->angle));
+    double c = cos(deg_to_rad(player->angle));
+    Vector2f player_rel_pos = player_get_relative_position(player, camera);
+
+    Vector2f d_pos = { (mouse_pos.x + player_rel_pos.x - camera->geometry.width ) / 2.f,
+                       (mouse_pos.y + player_rel_pos.y - camera->geometry.height) / 2.f};
+    camera_move_on(camera, d_pos.x, d_pos.y);
 }
 
 void camera_render_pointing_arrow(Camera *camera, SDL_Renderer *renderer, Vector2f point_from, Vector2f point_to)

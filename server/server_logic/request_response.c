@@ -10,6 +10,7 @@
 void response_set_player_states(PlayerStateResponse *state, Player *player)
 {
     state->angle = player->angle;
+    state->is_alive = player->is_alive;
     state->position.x = player->geometry.x;
     state->position.y = player->geometry.y;
     state->velocity.x = player->velocity.x;
@@ -32,7 +33,7 @@ void response_set_bullets_states(BulletsStateResponse *state, Bullets *bullets)
 void request_log(RequestStructure *req, char* msg, const char* function, const unsigned line)
 {
     char buf[200] = {'\0'};
-    sprintf(buf, "%s:%d|%d, %f, %f, %d, %d, %d",
+    sprintf(buf, "%s:%d|%lf, %f, %f, %d, %d, %d, %d",
             msg,
             req->req_number,
             req->player_state.angle,
@@ -40,14 +41,15 @@ void request_log(RequestStructure *req, char* msg, const char* function, const u
             req->player_state.position.y,
             req->player_state.velocity.x,
             req->player_state.velocity.y,
-            req->player_state.shot_done);
+            req->critical_event.type,
+            req->critical_event.number_of_player);
     log_action(buf, function, line);
 }
 
 void response_log(ResponseStructure *res, char* msg, const char* function, const unsigned line)
 {
     char buf[200] = {'\0'};
-    sprintf(buf, "%s:%d|%d, %f, %f, %d, %d|%d, %f, %f, %d, %d|%d",
+    sprintf(buf, "%s:%d|%lf, %f, %f, %d, %d|%lf, %f, %f, %d, %d|%d",
             msg,
             res->res_number,
             res->players[0].angle,

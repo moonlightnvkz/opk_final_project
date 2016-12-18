@@ -4,20 +4,14 @@
 #include "loggers.h"
 #include "game_logic/mvc.h"
 #include "server_logic/socket_controller.h"
-#include "game_logic/player.h"
 
-// TODO: mvc -> collect every player.is_alive flag change -> if any -> send to the server
-
-// TODO: Shooting according to player sprite. Bullet speed > player speed.
-// TODO: camera(player) -> camera(mouse)
+// TODO: wont be done: camera(player) -> camera(mouse) - need to warp mouse to the center after each loop...
 
 // FIXME: loggers for different types
 
 // TODO: static items with collision
 
 // TODO: EXPLOSIONS!!! (barrels)
-
-// FIXME: SIGPIPE error
 
 // TODO: UI
 
@@ -67,7 +61,7 @@ int main(int argc , char *argv[])
 
         mvc_process_moving(&mvc, curr_ticks - prev_ticks);
 
-        sc_send_current_state(&socketController, mvc.players + GlobalVariables.number_of_player);
+        sc_send_current_state(&socketController, &mvc);
 
         res = sc_receive_current_state(&socketController);
         if (res == SC_CONNECTION_CLOSED) {

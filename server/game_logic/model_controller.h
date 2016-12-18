@@ -22,6 +22,4 @@ void mc_destroy(ModelController *mc);
 
 void mc_process_moving(ModelController *mc, unsigned delta_ticks);
 
-void mc_apply_request(ModelController *mc, Player *player, RequestStructure *request);
-
-void mc_reset_temp_flags(ModelController *mc);
+void mc_apply_request(ModelController *mc, unsigned number_of_player, RequestStructure *request);

@@ -114,7 +114,7 @@ void bullet_collision(Bullet *bullet, Player players[PLAYER_COUNT]/*, Object *ob
 {
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (players[i].is_alive && !geometry_rect_rect_collision_check(bullet->geometry, false, players[i].geometry)) {
-            players[i].is_alive = false;
+            player_kill(&players[i]);
             bullet->ttl = 0;
         }
     }
@@ -131,15 +131,16 @@ void bullet_move(Bullet *bullet, unsigned delta_ticks, Player players[PLAYER_COU
     bullet_reflect(bullet);
 }
 
-bool bullets_add_bullet(Bullets *bullets, Vector2f position, int angle)
+bool bullets_add_bullet(Bullets *bullets, Vector2f position, double angle)
 {
     if (bullets->number == BULLET_MAX_AMOUNT) {
         return false;
     }
-    bullets->bullets[bullets->number].angle = angle;
-    bullets->bullets[bullets->number].geometry.x = position.x;
-    bullets->bullets[bullets->number].geometry.y = position.y;
-    bullets->bullets[bullets->number].ttl = BULLET_TTL;
+    Bullet *bullet = &bullets->bullets[bullets->number];
+    bullet->angle = angle;
+    bullet->geometry.x = position.x - bullet->geometry.width / 2.f;
+    bullet->geometry.y = position.y - bullet->geometry.height / 2.f;
+    bullet->ttl = BULLET_TTL;
     bullets->number++;
     return true;
 }

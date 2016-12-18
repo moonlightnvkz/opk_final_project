@@ -19,6 +19,7 @@
 #define PLAYER_VELOCITY             600
 #define PLAYER_FIRE_RATE            5   // Shots per second
 #define PLAYER_COUNT                2
+#define PLAYER_FIRE_START_DISTANCE  50
 
 #define BULLET_VELOCITY             600
 #define BULLET_MAX_AMOUNT           10  // For both players
