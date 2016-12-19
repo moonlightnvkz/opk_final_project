@@ -10,7 +10,7 @@
 
 typedef struct tPlayer Player;
 typedef struct tBullets Bullets;
-
+typedef struct tExplosives Explosives;
 
 #pragma pack(push, 1)
 typedef struct tStartSignal {
@@ -32,7 +32,7 @@ typedef enum eCriticalEventType {
 
 typedef struct tCriticalEvent {
     CriticalEventType type;
-    unsigned number_of_player;  // player which done event
+    unsigned description;  // player number
 } CriticalEvent;
 
 typedef struct tRequestStructure {
@@ -59,17 +59,33 @@ typedef struct tBulletsStateResponse {
     unsigned number;
 } BulletsStateResponse;
 
+typedef struct ExplosiveStateResponse {
+    Vector2i position_at_map;   // map_descr[][]
+    bool is_damaged;
+    int timer_damaged;
+    bool is_exploding;
+    int timer_explosion;
+} ExplosiveStateResponse;
+
+typedef struct tExplosivesStateResonse {
+    ExplosiveStateResponse explosives[EXPLOSIVE_MAX_AMOUNT];
+    unsigned number;
+} ExplosivesStateResponse;
+
 typedef struct tResponseStructure {
     bool quit;
     unsigned res_number;
     PlayerStateResponse players[PLAYER_COUNT];
     BulletsStateResponse bullets;
+    ExplosivesStateResponse explosives;
 } ResponseStructure;
 #pragma pack(pop)
 
 void response_set_player_states(PlayerStateResponse *state, Player *player);
 
 void response_set_bullets_states(BulletsStateResponse *state, Bullets *bullets);
+
+void response_set_explosives_state(ExplosivesStateResponse *state, Explosives *explosives);
 
 void request_log(RequestStructure *req, char *msg, const char *function, const unsigned line);
 

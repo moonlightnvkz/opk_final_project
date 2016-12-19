@@ -3,9 +3,10 @@
 //
 #include <stdio.h>
 #include "request_response.h"
-#include "../game_logic/player.h"
 #include "../loggers.h"
+#include "../game_logic/player.h"
 #include "../game_logic/bullets.h"
+#include "../game_logic/explosives.h"
 
 void response_set_player_states(PlayerStateResponse *state, Player *player)
 {
@@ -30,6 +31,21 @@ void response_set_bullets_states(BulletsStateResponse *state, Bullets *bullets)
     }
 }
 
+void response_set_explosives_state(ExplosivesStateResponse *state, Explosives *explosives)
+{
+    state->number = explosives->number;
+    for (unsigned i = 0; i < EXPLOSIVE_MAX_AMOUNT; ++i) {
+        Explosive *explosive = &explosives->explosives[i];
+        ExplosiveStateResponse *exp_state = &state->explosives[i];
+        exp_state->is_damaged = explosive->is_damaged;
+        exp_state->is_exploding = explosive->is_exploding;
+        exp_state->timer_damaged = explosive->timer_damaged;
+        exp_state->timer_explosion = explosive->timer_explosion;
+        exp_state->position_at_map.x = explosive->position_at_map.x;
+        exp_state->position_at_map.y = explosive->position_at_map.y;
+    }
+}
+
 void request_log(RequestStructure *req, char* msg, const char* function, const unsigned line)
 {
     char buf[200] = {'\0'};
@@ -42,7 +58,7 @@ void request_log(RequestStructure *req, char* msg, const char* function, const u
             req->player_state.velocity.x,
             req->player_state.velocity.y,
             req->critical_event.type,
-            req->critical_event.number_of_player);
+            req->critical_event.description);
     log_action(buf, function, line);
 }
 

@@ -5,8 +5,6 @@
 #include "game_logic/mvc.h"
 #include "server_logic/socket_controller.h"
 
-// TODO: EXPLOSIONS!!!
-
 // TODO: will not be done: camera(player) -> camera(mouse) - need to warp mouse to the center after each loop...
 
 // FIXME: loggers for different types

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <stdio.h>
 #include <SDL_system.h>
 #include "geometry.h"
 #include "../default_values.h"

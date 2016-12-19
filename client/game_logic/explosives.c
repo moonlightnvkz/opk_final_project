@@ -3,11 +3,13 @@
 //
 
 #include <assert.h>
-#include "explosive.h"
+#include "explosives.h"
 #include "sdl_helpers.h"
 #include "../loggers.h"
 #include "camera.h"
 #include "tile_map.h"
+#include "../server_logic/request_response.h"
+#include "player.h"
 
 void explosions_disable_explosive(Explosives *explosives, Explosive *explosive);
 
@@ -71,6 +73,9 @@ void explosives_destroy(Explosives *explosives)
 
 void explosive_on_damage(Explosive *explosive)
 {
+    if (explosive == NULL) {
+        return;
+    }
     if (explosive->is_damaged) {
         return;
     }
@@ -82,20 +87,33 @@ void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, Pl
 {
     for (unsigned i = 0; i < explosives->number; ++i) {
         Explosive *explosive = &explosives->explosives[i];
+        // Case it's undamaged
         if (!explosive->is_damaged) {
             continue;
         }
+        // Animation is over, need to remove it from the map
         if (explosive->is_exploding && explosive->timer_explosion == 0) {
             explosions_disable_explosive(explosives, explosive);
         }
+        // Explosion case
         if (explosive->timer_damaged == 0 && !explosive->is_exploding) {
             if (explosive->timer_explosion == 0) {
                 continue;
+            }
+            for (unsigned k = 0; k < PLAYER_COUNT; ++k) {
+                unsigned x1, x2, y1, y2;
+                tilemap_coords_to_tiles(players[k].geometry, &x1, &x2, &y1, &y2);
+                ObjectGeometry rect1 = {x1, y1, x2 - x1, y2 - y1};
+                ObjectGeometry rect2 = {explosive->position_at_map.x - 1, explosive->position_at_map.y - 1, 2, 2};
+                if (!geometry_rect_rect_collision_check(rect1, false, rect2)) {
+                    player_kill(&players[k]);
+                }
             }
             explosive->is_exploding = true;
             explosive->current_sprite = explosives->texture_explosion[0];
             continue;
         }
+        // Explosion hasn't started, but need to be started now
         if (!explosive->is_exploding) {
             explosive->timer_damaged -= delta_ticks;
             explosive->timer_damaged < 0 ? (explosive->timer_damaged = 0) : 0;
@@ -103,7 +121,9 @@ void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, Pl
                                                                     (EXPLOSIVE_DAMAGED_ANIMATION_TIME /
                                                                      EXPLOSION_DAMAGED_TICKS_IN_ANIMATION) %
                                                                     EXPLOSIVE_DAMAGED_SPRITES_COUNT];
-        } else {
+        }
+        // Explosion is going
+        else {
             explosive->timer_explosion -= delta_ticks;
             explosive->timer_explosion < 0 ? (explosive->timer_explosion = 0) : 0;
             explosive->current_sprite = explosives->texture_explosion[explosive->timer_explosion /
@@ -167,4 +187,18 @@ void explosives_render_exposive(Explosive *explosive, SDL_Renderer *renderer, Ca
         render_texture(explosive->current_sprite, renderer, x, y,
                        (int) explosive->size.x,
                        (int) explosive->size.y);
+}
+
+void explosives_apply_response(Explosives *explosives, ExplosivesStateResponse *state)
+{
+    explosives->number = state->number;
+    for (unsigned i = 0; i < EXPLOSIVE_MAX_AMOUNT; ++i) {
+        Explosive *explosive = &explosives->explosives[i];
+        explosive->position_at_map.x = state->explosives[i].position_at_map.x;
+        explosive->position_at_map.y = state->explosives[i].position_at_map.y;
+        explosive->is_damaged = state->explosives[i].is_damaged;
+        explosive->is_exploding = state->explosives[i].is_exploding;
+        explosive->timer_damaged = state->explosives[i].timer_damaged;
+        explosive->timer_explosion = state->explosives[i].timer_explosion;
+    }
 }

@@ -10,6 +10,7 @@
 #include "../server_logic/request_response.h"
 #include "../loggers.h"
 #include "../default_values.h"
+#include "explosives.h"
 
 void mc_check_request_and_fix(ModelController *mc, unsigned number_of_player, RequestStructure *request);
 
@@ -53,6 +54,8 @@ void mc_process_moving(ModelController *mc, unsigned delta_ticks)
         player_move(mc->players + i, delta_ticks);
     }
     bullets_move_all(&mc->bullets, delta_ticks, mc->players);
+
+    explosives_explode_process(&mc->map.explosives, delta_ticks, mc->players);
 }
 
 int mc_alive_players_count(ModelController *mc)
@@ -71,11 +74,11 @@ void mc_apply_request(ModelController *mc, unsigned number_of_player, RequestStr
     mc_check_request_and_fix(mc, number_of_player, request);
 
     player_apply_request(&mc->players[number_of_player], request);
-    if (request->critical_event.type == CE_SHOT_DONE && request->critical_event.number_of_player == number_of_player) {
+    if (request->critical_event.type == CE_SHOT_DONE && request->critical_event.description == number_of_player) {
         player_do_shot(&mc->players[number_of_player], &mc->bullets);
     }
     if (request->critical_event.type == CE_DEATH) {
-        player_kill(&mc->players[request->critical_event.number_of_player]);
+        player_kill(&mc->players[request->critical_event.description]);
     }
 }
 

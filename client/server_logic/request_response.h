@@ -30,7 +30,7 @@ typedef enum eCriticalEventType {
 
 typedef struct tCriticalEvent {
     CriticalEventType type;
-    unsigned number_of_player;  // player which done event
+    unsigned description;   // player number
 } CriticalEvent;
 
 typedef struct tRequestStructure {
@@ -57,11 +57,25 @@ typedef struct tBulletsStateResponse {
     unsigned number;
 } BulletsStateResponse;
 
+typedef struct tExplosiveStateResponse {
+    Vector2i position_at_map;   // map_descr[][]
+    bool is_damaged;
+    int timer_damaged;
+    bool is_exploding;
+    int timer_explosion;
+} ExplosiveStateResponse;
+
+typedef struct tExplosivesStateResponse {
+    ExplosiveStateResponse explosives[EXPLOSIVE_MAX_AMOUNT];
+    unsigned number;
+} ExplosivesStateResponse;
+
 typedef struct tResponseStructure {
     bool quit;
     unsigned res_number;
     PlayerStateResponse players[PLAYER_COUNT];
     BulletsStateResponse bullets;
+    ExplosivesStateResponse explosives;
 } ResponseStructure;
 #pragma pack(pop)
 

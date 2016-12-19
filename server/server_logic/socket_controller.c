@@ -96,8 +96,10 @@ void sc_create_responses(SocketController *sc, ModelController *mc, bool quit)
 {
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
         response_set_player_states(&sc->response.players[i], mc->players + i);
-        response_set_bullets_states(&sc->response.bullets, &mc->bullets);
     }
+    response_set_bullets_states(&sc->response.bullets, &mc->bullets);
+    response_set_explosives_state(&sc->response.explosives, &mc->map.explosives);
+
     sc->response.quit = quit;
 }
 

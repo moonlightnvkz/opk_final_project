@@ -7,12 +7,22 @@
 #include "game_logic/geometry.h"
 
 typedef struct tMapDescription MapDescription;
+typedef struct tTileMap TileMap;
 
 #define MAP_WIDTH                       1024    // must be a multiple of TILE_WIDTH
 #define MAP_HEIGHT                      1024    // must be a multiple of TILE_HEIGHT
 #define MAP_TILE_NUMBER                 2   // tiles stores in an array. Index - number of a tile.
                                             //Whole map stores in file like a 2-D array and loaded on start
 #define MAP_LOAD_FILE                   "res/map/tilemap"
+
+#define EXPLOSIVE_MAX_AMOUNT                    10
+#define EXPLOSIVE_WIDTH                         64
+#define EXPLOSIVE_HEIGHT                        64
+#define EXPLOSIVE_DAMAGED_SPRITES_COUNT         2
+#define EXPLOSIVE_EXPLOSION_SPRITES_COUNT       8
+#define EXPLOSIVE_DAMAGED_ANIMATION_TIME        2000 //ms
+#define EXPLOSION_DAMAGED_TICKS_IN_ANIMATION    20
+#define EXPLOSIVE_EXPLOSION_ANIMATION_TIME      1000  //ms
 
 #define TILE_WIDTH                      64
 #define TILE_HEIGHT                     64
@@ -43,6 +53,7 @@ typedef struct tMapDescription MapDescription;
 struct tGlobalVariables {
     ObjectGeometry map_geometry;
     Vector2i tile_size;
+    TileMap *map;
     MapDescription *map_descr;
 } GlobalVariables;
 

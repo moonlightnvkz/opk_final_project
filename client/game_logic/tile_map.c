@@ -8,7 +8,7 @@
 #include "../default_values.h"
 #include "sdl_helpers.h"
 #include "camera.h"
-#include "explosive.h"
+#include "explosives.h"
 
 bool tilemap_load_from_file(TileMap *map, const char * file_path);
 
@@ -96,6 +96,27 @@ bool tilemap_load_from_file(TileMap *map, const char * file_path)
 
 bool tilemap_collision_check(ObjectGeometry geom)
 {
+    unsigned tile_x1, tile_x2, tile_y1, tile_y2;
+
+    tilemap_coords_to_tiles(geom, &tile_x1, &tile_x2, &tile_y1, &tile_y2);
+
+    MapDescription *map_descr = GlobalVariables.map_descr;
+    for (unsigned i = tile_x1; i <= tile_x2; ++i) {
+        for (unsigned j = tile_y1; j <= tile_y2; ++j) {
+            if (map_descr->map_descr[j][i] == TM_BLOCK) {
+                return false;
+            }
+            if (map_descr->map_descr[j][i] == TM_EXPLOSIVE) {
+                explosive_on_damage(explosives_get_explosive_on(&GlobalVariables.map->explosives, i, j));
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void tilemap_coords_to_tiles(ObjectGeometry geom, unsigned *x1, unsigned *x2, unsigned *y1, unsigned *y2)
+{
     MapDescription *map_descr = GlobalVariables.map_descr;
     int tile_x1 = (int)  geom.x / GlobalVariables.tile_size.x;
     int tile_y1 = (int)  geom.y / GlobalVariables.tile_size.y;
@@ -110,19 +131,10 @@ bool tilemap_collision_check(ObjectGeometry geom)
     tile_x2 >= map_descr->width ? (tile_x2 = map_descr->width  - 1) : 0;
     tile_y1 >= map_descr->width ? (tile_y1 = map_descr->height - 1) : 0;
     tile_y2 >= map_descr->width ? (tile_y2 = map_descr->height - 1) : 0;
-
-    for (int i = tile_x1; i <= tile_x2; ++i) {
-        for (int j = tile_y1; j <= tile_y2; ++j) {
-            if (map_descr->map_descr[j][i] == TM_BLOCK) {
-                return false;
-            }
-            if (map_descr->map_descr[j][i] == TM_EXPLOSIVE) {
-                explosive_on_damage(explosives_get_explosive_on(&GlobalVariables.map->explosives, i, j));
-                return false;
-            }
-        }
-    }
-    return true;
+    *x1 = (unsigned) tile_x1;
+    *x2 = (unsigned) tile_x2;
+    *y1 = (unsigned) tile_y1;
+    *y2 = (unsigned) tile_y2;
 }
 
 void tilemap_render(TileMap *map, SDL_Renderer *renderer, Camera *camera) {

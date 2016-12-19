@@ -7,12 +7,15 @@
 #include <SDL_system.h>
 #include "geometry.h"
 #include "../default_values.h"
+#include "explosives.h"
 
 typedef struct tCamera Camera;
 
-typedef struct tTile {
-    SDL_Texture *texture;
-} Tile;
+typedef enum eTileTypes {
+    TM_FLOOR,
+    TM_BLOCK,
+    TM_EXPLOSIVE
+} TileTypes;
 
 typedef struct tMapDescription {
     unsigned width;  // = MAP_WIDTH / TILE_WIDTH
@@ -23,12 +26,14 @@ typedef struct tMapDescription {
 typedef struct tTileMap {
     Vector2i size;
     MapDescription map_descr;
-    Tile tiles[MAP_TILE_NUMBER];
     Vector2i tile_size;
+    Explosives explosives;
 } TileMap;
 
 bool tilemap_create(TileMap *map);
 
 void tilemap_destroy(TileMap *map);
+
+void tilemap_coords_to_tiles(ObjectGeometry geom, unsigned *x1, unsigned *x2, unsigned *y1, unsigned *y2);
 
 bool tilemap_collision_check(ObjectGeometry geom);

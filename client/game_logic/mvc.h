@@ -13,7 +13,7 @@
 #include "player.h"
 #include "bullets.h"
 #include "../server_logic/request_response.h"
-#include "explosive.h"
+#include "explosives.h"
 
 typedef struct tResponseStructure ResponseStructure;
 
