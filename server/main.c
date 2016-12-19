@@ -1,7 +1,3 @@
-/*
-    C socket server example
-*/
-
 #include <arpa/inet.h> //inet_addr
 #include <SDL_timer.h>
 #include "server_logic/request_response.h"
@@ -9,20 +5,19 @@
 #include "game_logic/model_controller.h"
 #include "server_logic/socket_controller.h"
 
-
 int main(int argc , char *argv[])
 {
     logger_init();
     globals_init();
     ModelController mc;
     if (!mc_init(&mc)) {
-        log_error("Failed to initialize model controller", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to initialize model controller");
         logger_destroy();
         exit(1);
     }
     SocketController sc;
     if (!sc_init(&sc)) {
-        log_error("Failed to initialize socket controller", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to initialize socket controller");
         mc_destroy(&mc);
         logger_destroy();
         exit(1);
@@ -31,7 +26,7 @@ int main(int argc , char *argv[])
         if (sc_accept_player(&sc, i) != SC_NO_ERROR) {
             mc_destroy(&mc);
             sc_destroy(&sc);
-            log_error("Failed to accept player connection", __FUNCTION__, __LINE__);
+            LOG_ERROR("Failed to accept player connection");
             logger_destroy();
             return 0;
         }
@@ -40,7 +35,7 @@ int main(int argc , char *argv[])
         if (sc_send_start_signal(&sc, i) != SC_NO_ERROR) {
             mc_destroy(&mc);
             sc_destroy(&sc);
-            log_error("Failed to send start signal", __FUNCTION__, __LINE__);
+            LOG_ERROR("Failed to send start signal");
             logger_destroy();
             return 0;
         }

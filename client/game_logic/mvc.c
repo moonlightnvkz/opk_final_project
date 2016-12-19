@@ -10,19 +10,19 @@
 bool mvc_init(MVC *mvc)
 {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        log_error(SDL_GetError(), __FUNCTION__, __LINE__);
+        LOG_ERROR("SDL_GetError()");
         return false;
     }
 
     if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-        log_error(SDL_GetError(), __FUNCTION__, __LINE__);
+        LOG_ERROR("SDL_GetError()");
         return false;
     }
 
     mvc->window = SDL_CreateWindow("The Final Project", 100, 100,
                                WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     if (mvc->window == NULL) {
-        log_error(SDL_GetError(), __FUNCTION__, __LINE__);
+        LOG_ERROR("SDL_GetError()");
         mvc_destroy(mvc);
         return false;
     }
@@ -30,32 +30,32 @@ bool mvc_init(MVC *mvc)
     mvc->renderer = SDL_CreateRenderer(mvc->window, -1,
                                    SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (mvc->renderer == NULL) {
-        log_error(SDL_GetError(), __FUNCTION__, __LINE__);
+        LOG_ERROR("SDL_GetError()");
         mvc_destroy(mvc);
         return false;
     }
 
     if (!camera_create(&mvc->camera, mvc->renderer)) {
-        log_error("Failed  to create camera", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed  to create camera");
         mvc_destroy(mvc);
         return false;
     }
 
     if (!tilemap_create(&mvc->map, mvc->renderer)) {
-        log_error("Failed to create map", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to create map");
         mvc_destroy(mvc);
         return false;
     }
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (!player_create(mvc->players + i, mvc->renderer)) {
-            log_error("Failed to create this_player", __FUNCTION__, __LINE__);
+            LOG_ERROR("Failed to create this_player");
             mvc_destroy(mvc);
             return false;
         }
     }
 
     if (!bullets_create(&mvc->bullets, mvc->renderer)) {
-        log_error("Failed to create bullets", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to create bullets");
         mvc_destroy(mvc);
         return false;
     }

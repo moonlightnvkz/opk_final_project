@@ -39,10 +39,10 @@ bool tilemap_create(TileMap *map, SDL_Renderer *renderer)
         tile_path[TILE_TEXTURE_NUMBER_IDX] = (char) (i + '0');
         tile->texture = load_texture(tile_path, renderer);
         if (!tile->texture) {
-            log_error("Failed to load texture for TileMap's tiles", __FUNCTION__, __LINE__);
+            LOG_ERROR("Failed to load texture for TileMap's tiles");
             tile->texture = load_texture(MISSING_TEXTURE, renderer);
             if (tile->texture == NULL) {
-                log_error("Failed to load <missing_texture>", __FUNCTION__, __LINE__);
+                LOG_ERROR("Failed to load <missing_texture>");
                 tilemap_destroy(map);
                 return false;
             }
@@ -50,7 +50,7 @@ bool tilemap_create(TileMap *map, SDL_Renderer *renderer)
     }
 
     if (!explosives_create(&map->explosives, renderer)) {
-        log_error("Failed to create explosives", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to create explosives");
         tilemap_destroy(map);
         return false;
     }
@@ -80,7 +80,7 @@ bool tilemap_load_from_file(TileMap *map, const char * file_path)
 {
     FILE *file = fopen(file_path, "r");
     if (!file) {
-        log_error("Failed to open tilemap file", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to open tilemap file");
         return false;
     }
     for (unsigned h = 0; h < map->map_descr.height; ++h){

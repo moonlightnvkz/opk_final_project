@@ -64,6 +64,6 @@ Pointer deque_iterator_next(Deque *pqueue, Iterator *it);
 
 Pointer deque_iterator_get_data(Iterator *it);
 
-Iterator *deque_iterator_create(Deque *pqueue);
+Iterator *deque_iterator_create(Deque *pqueue, Iterator *it);
 
 void deque_iterator_destroy(Iterator *it);

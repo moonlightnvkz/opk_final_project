@@ -17,7 +17,7 @@ bool sc_init(SocketController *sc)
 
     sc->socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (sc->socket_desc == -1) {
-        log_error("Failed to create socket", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to create socket");
         return false;
     }
     sc->server.sin_family = AF_INET;
@@ -28,15 +28,13 @@ bool sc_init(SocketController *sc)
         sc->request_numbers[i] = 0;
     }
     if (bind(sc->socket_desc, (struct sockaddr *) &sc->server, sizeof(sc->server)) < 0) {
-        log_error("Failed to bind", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to bind");
         return false;
     }
 
     listen(sc->socket_desc , 3);
 
-    char msg[50];
-    sprintf(msg, "Server listen at %d:%d", INADDR_ANY, SERVER_PORT);
-    log_action(msg, __FUNCTION__, __LINE__);
+    LOG_ERROR("Server listen at %d:%d", INADDR_ANY, SERVER_PORT);
     return true;
 }
 
@@ -53,39 +51,34 @@ int sc_accept_player(SocketController *sc, unsigned number_of_player)
 {
 
     if (number_of_player >= PLAYER_COUNT) {
-        log_error("Unsupported player", __FUNCTION__, __LINE__);
+        LOG_ERROR("Unsupported player");
         return SC_UNSUPPORTED_PLAYER;
     }
-    char msg[50];
-    sprintf(msg, "Waiting for incoming connection: player %d", number_of_player);
-    log_action(msg, __FUNCTION__, __LINE__);
+    LOG_ACTION("Waiting for incoming connection: player %d", number_of_player);
 
     sc->player_sockets[number_of_player] = accept(sc->socket_desc, NULL, NULL);
     if (sc->player_sockets[number_of_player] < 0) {
-        log_error("Failed to accept player connection", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to accept player connection");
         return SC_CONNECTION_FAILED;
     }
-    sprintf(msg, "Connection accepted:player %d", number_of_player);
-    log_action(msg, __FUNCTION__, __LINE__);
+    LOG_ACTION("Connection accepted:player %d", number_of_player);
     return SC_NO_ERROR;
 }
 
 int sc_receive_request(SocketController *sc, unsigned number_of_player)
 {
     if (number_of_player >= PLAYER_COUNT) {
-        log_error("Unsupported player", __FUNCTION__, __LINE__);
+        LOG_ERROR("Unsupported player");
         return SC_UNSUPPORTED_PLAYER;
     }
 
     ssize_t read_size = recv(sc->player_sockets[number_of_player] , &sc->request , sizeof(RequestStructure) , 0);
     if(read_size == 0) {
-        char msg[50];
-        sprintf(msg, "Player %d disconnected", number_of_player);
-        log_action(msg, __FUNCTION__, __LINE__);
+        LOG_ACTION("Player %d disconnected", number_of_player);
         return SC_CONNECTION_CLOSED;
     }
     else if(read_size == -1) {
-        log_error("Receive failed", __FUNCTION__, __LINE__);
+        LOG_ERROR("Receive failed");
         return SC_RECEIVE_FAILED;
     }
     sc->request_numbers[number_of_player] = sc->request.req_number;
@@ -106,15 +99,13 @@ void sc_create_responses(SocketController *sc, ModelController *mc, bool quit)
 int sc_send_response(SocketController *sc, unsigned number_of_player)
 {
     if (number_of_player >= PLAYER_COUNT) {
-        log_error("Unsupported player", __FUNCTION__, __LINE__);
+        LOG_ERROR("Unsupported player");
         return SC_UNSUPPORTED_PLAYER;
     }
     sc->response.res_number = sc->request_numbers[number_of_player];
     if(send(sc->player_sockets[number_of_player], &sc->response, sizeof(ResponseStructure), MSG_DONTWAIT) < sizeof(ResponseStructure))
     {
-        char msg[50];
-        sprintf(msg, "Send failed (player %d)", number_of_player);
-        log_error(msg, __FUNCTION__, __LINE__);
+        LOG_ERROR("Send failed (player %d)", number_of_player);
         return SC_SEND_FAILED;
     }
     return SC_NO_ERROR;
@@ -123,13 +114,13 @@ int sc_send_response(SocketController *sc, unsigned number_of_player)
 int sc_send_start_signal(SocketController *sc, unsigned number_of_player)
 {
     if (number_of_player >= PLAYER_COUNT) {
-        log_error("Unsupported player", __FUNCTION__, __LINE__);
+        LOG_ERROR("Unsupported player");
         return SC_UNSUPPORTED_PLAYER;
     }
     StartSignal start_signal = {SERVER_START_SIGNAL, number_of_player};
     if(send(sc->player_sockets[number_of_player], &start_signal, sizeof(StartSignal), MSG_CONFIRM) < 0)
     {
-        log_error("Send start response failed", __FUNCTION__, __LINE__);
+        LOG_ERROR("Send start response failed");
         return SC_SEND_FAILED;
     }
     return SC_NO_ERROR;

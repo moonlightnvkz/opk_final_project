@@ -19,20 +19,20 @@ bool mc_init(ModelController *mc)
     assert(mc != NULL);
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
         if (!player_create(mc->players + i)) {
-            log_error("Failed to create player", __FUNCTION__, __LINE__);
+            LOG_ERROR("Failed to create player");
             mc_destroy(mc);
             return false;
         }
     }
 
     if (!bullets_create(&mc->bullets)) {
-        log_error("Failed to cerate bullets", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to cerate bullets");
         mc_destroy(mc);
         return false;
     }
 
     if (!tilemap_create(&mc->map)) {
-        log_error("Failed to create tile_map", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to create tile_map");
         mc_destroy(mc);
         return false;
     }
@@ -103,7 +103,7 @@ void mc_check_request_and_fix(ModelController *mc, unsigned number_of_player, Re
                                            (float) time_elapsed / 1000 * PLAYER_VELOCITY;
     }
     if (request->critical_event.type == CE_SHOT_DONE && (SDL_GetTicks() - player->last_shot_time < (float) 1000 / PLAYER_FIRE_RATE)) {
-        log_error("Too high firerate", __FUNCTION__, __LINE__);
+        LOG_ERROR("Too high firerate");
         request->critical_event.type = CE_NONE;
     }
 }

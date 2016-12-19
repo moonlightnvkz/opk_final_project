@@ -39,10 +39,10 @@ bool player_create(Player *player, SDL_Renderer *renderer)
     player->last_shot_time = 0;
     player->texture = load_texture(PLAYER_TEXTURE, renderer);
     if (player->texture == NULL) {
-        log_error("Failed to load texture", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to load texture");
         player->texture = load_texture(MISSING_TEXTURE, renderer);
         if (player->texture == NULL) {
-            log_error("Failed to load <missing_texture>", __FUNCTION__, __LINE__);
+            LOG_ERROR("Failed to load <missing_texture>");
             return NULL;
         }
     }
@@ -220,18 +220,20 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
     }
 
     // Apply shift from the request server doesn't know about
-    Iterator *it = deque_iterator_create(requests_list);
-    while (it->data != NULL) {
-        RequestStructure *prev = (RequestStructure *) deque_iterator_get_data(it);
-        if (deque_iterator_next(requests_list, it) == NULL) {
+    Iterator it;
+    deque_iterator_create(requests_list, &it);
+    while (it.data != NULL) {
+        RequestStructure *prev = (RequestStructure *) deque_iterator_get_data(&it);
+        if (deque_iterator_next(requests_list, &it) == NULL) {
             break;
         }
         player_move_on(player,
-                       ((RequestStructure *) deque_iterator_get_data(it))->player_state.position.x -
+                       ((RequestStructure *) deque_iterator_get_data(&it))->player_state.position.x -
                        prev->player_state.position.x,
-                       ((RequestStructure *) deque_iterator_get_data(it))->player_state.position.y -
+                       ((RequestStructure *) deque_iterator_get_data(&it))->player_state.position.y -
                        prev->player_state.position.y);
     }
+    deque_iterator_destroy(&it);
     player_move_on(player, shift_after_last_request.x, shift_after_last_request.y);
 }
 

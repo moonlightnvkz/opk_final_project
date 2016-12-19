@@ -17,10 +17,10 @@ bool pa_create(PointingArrow *arrow, SDL_Renderer *renderer)
     arrow->size.y = POINTING_ARROW_HEIGHT;
     arrow->texture = load_texture(POINTING_ARROW_TEXTURE, renderer);
     if (arrow->texture == NULL) {
-        log_error("Failed to load texture", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to load texture");
         arrow->texture = load_texture(MISSING_TEXTURE, renderer);
         if (arrow->texture == NULL) {
-            log_error("Failed to load <missing_texture>", __FUNCTION__, __LINE__);
+            LOG_ERROR("Failed to load <missing_texture>");
             return false;
         }
     }

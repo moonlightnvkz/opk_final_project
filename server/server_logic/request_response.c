@@ -48,36 +48,24 @@ void response_set_explosives_state(ExplosivesStateResponse *state, Explosives *e
 
 void request_log(RequestStructure *req, char* msg, const char* function, const unsigned line)
 {
-    char buf[200] = {'\0'};
-    sprintf(buf, "%s:%d|%lf, %f, %f, %d, %d, %d, %d",
-            msg,
-            req->req_number,
-            req->player_state.angle,
-            req->player_state.position.x,
-            req->player_state.position.y,
-            req->player_state.velocity.x,
-            req->player_state.velocity.y,
-            req->critical_event.type,
-            req->critical_event.description);
-    log_action(buf, function, line);
+    LOG_ACTION("%s:%d:%s|%d|%d %d",
+               function,
+               line,
+               msg,
+               req->req_number,
+               req->critical_event.type,
+               req->critical_event.description);
 }
 
 void response_log(ResponseStructure *res, char* msg, const char* function, const unsigned line)
 {
-    char buf[200] = {'\0'};
-    sprintf(buf, "%s:%d|%lf, %f, %f, %d, %d|%lf, %f, %f, %d, %d|%d",
-            msg,
-            res->res_number,
-            res->players[0].angle,
-            res->players[0].position.x,
-            res->players[0].position.y,
-            res->players[0].velocity.x,
-            res->players[0].velocity.y,
-            res->players[1].angle,
-            res->players[1].position.x,
-            res->players[1].position.y,
-            res->players[1].velocity.x,
-            res->players[1].velocity.y,
-            res->bullets.number);
-    log_action(buf, function, line);
+    LOG_ACTION("%s:%d:%s|%d %d %d %d %d",
+               function,
+               line,
+               msg,
+               res->res_number,
+               res->players[0].is_alive,
+               res->players[1].is_alive,
+               res->bullets.number,
+               res->explosives.number);
 }

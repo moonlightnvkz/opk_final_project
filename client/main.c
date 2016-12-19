@@ -19,19 +19,19 @@ int main(int argc , char *argv[])
     globals_init();
     MVC mvc;
     if (!mvc_init(&mvc)) {
-        log_error("Failed to create mvc", __FUNCTION__, __LINE__);
+        LOG_ACTION(Failed to create mvc);
         logger_destroy();
         exit(1);
     }
     SocketController socketController;
     if (!sc_init(&socketController)) {
-        log_error("Failed to create socket controller", __FUNCTION__, __LINE__);
+        LOG_ACTION(Failed to create socket controller);
         mvc_destroy(&mvc);
         logger_destroy();
         exit(1);
     }
     if (sc_receive_start_signal(&socketController) != SC_NO_ERROR) {
-        log_error("sc_receive_start_signal failed", __FUNCTION__, __LINE__);
+        LOG_ACTION(sc_receive_start_signal failed);
         mvc_destroy(&mvc);
         sc_destroy(&socketController);
         logger_destroy();
@@ -62,7 +62,7 @@ int main(int argc , char *argv[])
 
         res = sc_receive_current_state(&socketController);
         if (res == SC_CONNECTION_CLOSED) {
-            log_error("Connection closed", __FUNCTION__, __LINE__);
+            LOG_ACTION(Connection closed);
             break;
         }
         if (res == SC_NO_ERROR) {

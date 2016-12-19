@@ -3,8 +3,8 @@
 //
 
 #include <stdio.h>
+#include <stdarg.h>
 #include "loggers.h"
-#include "time.h"
 
 static FILE* log_file;
 
@@ -23,32 +23,12 @@ void logger_destroy()
     fclose(log_file);
 }
 
-// Size of the buffer must be equal to 26
-static void format_time(char *buffer)
+void log_message(const char *error_message, ...)
 {
-    time_t timer;
-    struct tm* tm_info;
-
-    time(&timer);
-    tm_info = localtime(&timer);
-
-    strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-}
-
-void log_error(const char *error_message, const char *function, const unsigned line)
-{
-    char buffer[26];
-    format_time(buffer);
     if (log_file) {
-        fprintf(log_file, "%s:Error:%s:%s:%d\n", buffer,error_message, function, line);
-    }
-}
-
-void log_action(const char *error_message, const char *function, const unsigned line)
-{
-    char buffer[26];
-    format_time(buffer);
-    if (log_file) {
-        fprintf(log_file, "%s:%s:%s:%d\n", buffer,error_message, function, line);
+        va_list valist;
+        va_start(valist, error_message);
+        va_end(valist);
+        vfprintf(log_file, error_message, valist);
     }
 }

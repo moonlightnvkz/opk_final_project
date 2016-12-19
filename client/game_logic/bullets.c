@@ -31,10 +31,10 @@ bool bullets_create(Bullets *bullets, SDL_Renderer *renderer)
 
     bullets->texture = load_texture(BULLET_TEXTURE, renderer);
     if (bullets->texture == NULL) {
-        log_error("Failed to load texture", __FUNCTION__, __LINE__);
+        LOG_ACTION(Failed to load texture);
         bullets->texture = load_texture(MISSING_TEXTURE, renderer);
         if (bullets->texture == NULL) {
-            log_error("Failed to load <missing_texture>", __FUNCTION__, __LINE__);
+            LOG_ACTION(Failed to load <missing_texture>);
             return NULL;
         }
     }

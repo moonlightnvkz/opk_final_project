@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "my_deque.h"
+#include "loggers.h"
 
 static void deque_resize(Deque *pdeque, size_t new_size);
 static int deque_full(Deque *pqueue);
@@ -18,7 +19,7 @@ void deque_create(Deque *pdeque)
     pdeque->buffer = malloc(sizeof(Pointer) * pdeque->initial_size);
     if (pdeque->buffer == NULL)
     {
-        fprintf(stderr, "Can't allocate memory for circular buffer (queue_create)");
+        LOG_ERROR("Can not allocate memory for circular buffer (queue_create)");
         exit(1);
     }
     pdeque->buffer_end = pdeque->buffer + pdeque->initial_size;
@@ -117,7 +118,7 @@ static void deque_resize(Deque *pdeque, size_t new_size)
     Pointer *temp = realloc(pdeque->buffer, sizeof(Pointer) * new_size);
     if (!temp)
     {
-        fprintf(stderr, "Can't reallocate memory (deque_resize)");
+        LOG_ERROR("Can not reallocate memory (deque_resize)");
         exit(1);
     }
     pdeque->buffer = temp;
@@ -168,16 +169,12 @@ Pointer deque_iterator_get_data(Iterator *it) {
     return *it->data;
 }
 
-Iterator *deque_iterator_create(Deque *pqueue) {
-    Iterator *it = malloc(sizeof(Iterator));
-    if (it == NULL) {
-        fprintf(stderr, "Can't allocate memory for iterator (deque_iterator_create)");
-        exit(1);
-    }
+Iterator *deque_iterator_create(Deque *pqueue, Iterator *it) {
+    assert(it != NULL);
     it->data = pqueue->data_start;
     return it;
 }
 
 void deque_iterator_destroy(Iterator *it) {
-    free(it);
+    return;
 }

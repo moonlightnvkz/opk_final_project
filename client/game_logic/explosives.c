@@ -33,10 +33,10 @@ bool explosives_create(Explosives *explosives, SDL_Renderer *renderer)
             SDL_Texture **texture = &explosives->texture_damaged[i];
             *texture = load_texture(texture_path, renderer);
             if (!*texture) {
-                log_error("Failed to load texture for Explosives damaged sprite", __FUNCTION__, __LINE__);
+                LOG_ACTION(Failed to load texture for Explosives damaged sprite);
                 *texture = load_texture(MISSING_TEXTURE, renderer);
                 if (!*texture) {
-                    log_error("Failed to load <missing_texture>", __FUNCTION__, __LINE__);
+                    LOG_ACTION(Failed to load <missing_texture>);
                     return false;
                 }
             }
@@ -49,10 +49,10 @@ bool explosives_create(Explosives *explosives, SDL_Renderer *renderer)
             SDL_Texture **texture = &explosives->texture_explosion[i];
             *texture = load_texture(texture_path, renderer);
             if (!*texture) {
-                log_error("Failed to load texture for Explosives damaged sprite", __FUNCTION__, __LINE__);
+                LOG_ACTION(Failed to load texture for Explosives damaged sprite);
                 *texture = load_texture(MISSING_TEXTURE, renderer);
                 if (!*texture) {
-                    log_error("Failed to load <missing_texture>", __FUNCTION__, __LINE__);
+                    LOG_ACTION(Failed to load <missing_texture>);
                     return false;
                 }
             }

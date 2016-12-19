@@ -21,7 +21,7 @@ bool sc_init(SocketController *sc)
     deque_create(&sc->requests_list);
 
     if (sc_connect_to_server(sc) != 0) {
-        log_error("Failed to connect to the server", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to connect to the server");
         sc_destroy(sc);
         return false;
     }
@@ -45,7 +45,7 @@ bool sc_init(SocketController *sc)
 void sc_destroy(SocketController *sc)
 {
     if (shutdown(sc->sock, 2) == -1) {
-        log_error("Failed to close the socket", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to close the socket");
     };
     close(sc->sock);
     deque_destroy(&sc->requests_list);
@@ -55,7 +55,7 @@ static int sc_connect_to_server(SocketController *sc) {
     //Create socket
     sc->sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sc->sock == -1) {
-        log_error("Failed to create socket", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to create socket");
         return SC_SOCKET_CREATION_ERROR;
     }
 
@@ -65,11 +65,11 @@ static int sc_connect_to_server(SocketController *sc) {
 
     //Connect to remote server
     if (connect(sc->sock, (struct sockaddr *) &sc->server, sizeof(sc->server)) < 0) {
-        log_error("Failed to connect to the server", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to connect to the server");
         return SC_CONNECTION_FAILED;
     }
 
-    log_action("Connected", __FUNCTION__, __LINE__);
+    LOG_ACTION("Connected");
     return SC_NO_ERROR;
 }
 
@@ -91,7 +91,7 @@ int sc_send_current_state(SocketController *sc, MVC *mvc)
 
     last_send_time = SDL_GetTicks();
     if (send(sc->sock, req, sizeof(RequestStructure), MSG_DONTWAIT | MSG_NOSIGNAL) < 0) {
-        log_error("Send failed", __FUNCTION__, __LINE__);
+        LOG_ERROR("Send failed");
         return SC_SEND_FAILED;
     }
     request_log(req, "Send", __FUNCTION__, __LINE__);
@@ -105,17 +105,17 @@ int sc_receive_current_state(SocketController *sc) {
     static ssize_t left_to_receive = sizeof(ResponseStructure);
     ssize_t res = recv(sc->sock, &sc->last_response, sizeof(ResponseStructure), MSG_DONTWAIT);
     if (res == -1) {
-        log_error("Receive failed", __FUNCTION__, __LINE__);
+        LOG_ERROR("Receive failed");
         return SC_RECEIVE_FAILED;
     }
     if (res == 0) {
-        log_error("Connection closed", __FUNCTION__, __LINE__);
+        LOG_ERROR("Connection closed");
         return SC_CONNECTION_CLOSED;
     }
     left_to_receive -= res;
 
     if (left_to_receive < 0) {
-        log_error("Left to receive is bellow zero", __FUNCTION__, __LINE__);
+        LOG_ERROR("Left to receive is bellow zero");
         return SC_RECEIVE_FAILED;
     }
 
@@ -131,15 +131,13 @@ int sc_receive_start_signal(SocketController *sc)
 {
     StartSignal start_signal = {0, 0};
     if (recv(sc->sock, &start_signal, sizeof(StartSignal), MSG_WAITALL) <= 0) {
-        log_error("Receive of start signal failed", __FUNCTION__, __LINE__);
+        LOG_ERROR("Receive of start signal failed");
         return SC_RECEIVE_FAILED;
     }
     if (start_signal.symbol != SERVER_START_SIGNAL) {
         return SC_START_SIGNAL_MATHCHING_ERROR;
     }
     GlobalVariables.number_of_player = start_signal.number_of_player;
-    char msg[50];
-    sprintf(msg, "Start signal received:%c - %d", start_signal.symbol, GlobalVariables.number_of_player);
-    log_action(msg, __FUNCTION__, __LINE__);
+    LOG_ERROR("Start signal received:%c - %d", start_signal.symbol, GlobalVariables.number_of_player);
     return SC_NO_ERROR;
 }

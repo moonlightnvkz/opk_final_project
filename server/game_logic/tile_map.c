@@ -30,7 +30,7 @@ bool tilemap_create(TileMap *map)
     GlobalVariables.map_descr = &map->map_descr;
 
     if (!explosives_create(&map->explosives)) {
-        log_error("Failed to create explosives", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to create explosives");
         tilemap_destroy(map);
         return false;
     }
@@ -57,7 +57,7 @@ bool tilemap_load_from_file(TileMap *map, const char * file_path)
 {
     FILE *file = fopen(file_path, "r");
     if (!file) {
-        log_error("Failed to open tilemap file", __FUNCTION__, __LINE__);
+        LOG_ERROR("Failed to open tilemap file");
         return false;
     }
     for (unsigned h = 0; h < map->map_descr.height; ++h){
