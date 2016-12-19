@@ -14,6 +14,7 @@
 #include "bullets.h"
 #include "../server_logic/request_response.h"
 #include "explosives.h"
+#include "text.h"
 
 typedef struct tResponseStructure ResponseStructure;
 
@@ -26,6 +27,7 @@ typedef struct tMVC {
     SDL_Window *window;
     SDL_Renderer *renderer;
     Camera camera;
+    Text text;
 
     TileMap map;
     Player players[PLAYER_COUNT];

@@ -13,14 +13,14 @@ int main(int argc , char *argv[])
     if (!mc_init(&mc)) {
         LOG_ERROR("Failed to initialize model controller");
         logger_destroy();
-        exit(1);
+        exit(2);
     }
     SocketController sc;
     if (!sc_init(&sc)) {
         LOG_ERROR("Failed to initialize socket controller");
         mc_destroy(&mc);
         logger_destroy();
-        exit(1);
+        exit(2);
     }
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (sc_accept_player(&sc, i) != SC_NO_ERROR) {

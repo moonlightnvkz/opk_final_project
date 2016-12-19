@@ -3,6 +3,7 @@
 //
 
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include "../server_logic/request_response.h"
 #include "mvc.h"
 #include "../loggers.h"
@@ -10,12 +11,17 @@
 bool mvc_init(MVC *mvc)
 {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        LOG_ERROR("SDL_GetError()");
+        LOG_ERROR(SDL_GetError());
         return false;
     }
 
     if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-        LOG_ERROR("SDL_GetError()");
+        LOG_ERROR(SDL_GetError());
+        return false;
+    }
+
+    if (TTF_Init() != 0) {
+        LOG_ERROR(SDL_GetError());
         return false;
     }
 
@@ -60,6 +66,12 @@ bool mvc_init(MVC *mvc)
         return false;
     }
 
+    if (!text_create(&mvc->text)) {
+        LOG_ERROR("Failed to load text");
+        mvc_destroy(mvc);
+        return false;
+    }
+
     mvc->criticalEvent.type = CE_NONE;
     mvc->criticalEvent.description = 0;
     return true;
@@ -73,14 +85,16 @@ void mvc_destroy(MVC *mvc)
     if (mvc->renderer != NULL) {
         SDL_DestroyRenderer(mvc->renderer);
     }
+    text_destroy(&mvc->text);
+    bullets_destroy(&mvc->bullets);
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         player_destroy(mvc->players + i);
     }
     tilemap_destroy(&mvc->map);
-    bullets_destroy(&mvc->bullets);
     camera_destroy(&mvc->camera);
-    SDL_Quit();
+    TTF_Quit();
     IMG_Quit();
+    SDL_Quit();
 }
 
 void mvc_render(MVC *mvc)

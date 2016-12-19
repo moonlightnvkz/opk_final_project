@@ -5,11 +5,13 @@
 #include "game_logic/mvc.h"
 #include "server_logic/socket_controller.h"
 
+// TODO: UI
+
+// TODO: bullets reflection on static objects
+
 // TODO: will not be done: camera(player) -> camera(mouse) - need to warp mouse to the center after each loop...
 
-// FIXME: loggers for different types
-
-// TODO: UI
+// TODO: big boom
 
 // TODO: serialization / deserialization
 
@@ -19,23 +21,29 @@ int main(int argc , char *argv[])
     globals_init();
     MVC mvc;
     if (!mvc_init(&mvc)) {
-        LOG_ACTION(Failed to create mvc);
+        LOG_ERROR("Failed to create mvc");
         logger_destroy();
-        exit(1);
+        exit(2);
     }
     SocketController socketController;
     if (!sc_init(&socketController)) {
-        LOG_ACTION(Failed to create socket controller);
+        LOG_ERROR("Failed to create socket controller");
         mvc_destroy(&mvc);
         logger_destroy();
-        exit(1);
+        exit(2);
     }
+    SDL_RenderClear(mvc.renderer);
+    text_render_text(&mvc.text, TEXT_WAITING_FOR_PLAYERS, mvc.renderer, 0, 255, 0);
+    SDL_RenderPresent(mvc.renderer);
+
     if (sc_receive_start_signal(&socketController) != SC_NO_ERROR) {
-        LOG_ACTION(sc_receive_start_signal failed);
+        LOG_ERROR("sc_receive_start_signal failed");
         mvc_destroy(&mvc);
         sc_destroy(&socketController);
         logger_destroy();
     }
+    text_free_last_text(&mvc.text);
+
     unsigned curr_ticks = 0, prev_ticks = 0;
     const Uint8 *keystates = SDL_GetKeyboardState(NULL);
     while (!GlobalVariables.quit)

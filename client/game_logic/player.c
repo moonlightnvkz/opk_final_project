@@ -126,23 +126,23 @@ void player_keystates_process(Player *player, const Uint8 *keystates)
     player->velocity.x = player->velocity.y = 0;
     if (keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_W])
     {
-        player->velocity.x += PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
-        player->velocity.y -= PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
+        /*player->velocity.x += PLAYER_VELOCITY * sin(deg_to_rad(player->angle));*/
+        player->velocity.y -= PLAYER_VELOCITY/* * cos(deg_to_rad(player->angle))*/;
     }
     if (keystates[SDL_SCANCODE_DOWN] || keystates[SDL_SCANCODE_S])
     {
-        player->velocity.x -= PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
-        player->velocity.y += PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
+        /*player->velocity.x -= PLAYER_VELOCITY * sin(deg_to_rad(player->angle));*/
+        player->velocity.y += PLAYER_VELOCITY/* * cos(deg_to_rad(player->angle))*/;
     }
     if (keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
     {
-        player->velocity.x -= PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
-        player->velocity.y -= PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
+        player->velocity.x -= PLAYER_VELOCITY/* * cos(deg_to_rad(player->angle))*/;
+        /*player->velocity.y -= PLAYER_VELOCITY * sin(deg_to_rad(player->angle));*/
     }
     if (keystates[SDL_SCANCODE_RIGHT] || keystates[SDL_SCANCODE_D])
     {
-        player->velocity.x += PLAYER_VELOCITY * cos(deg_to_rad(player->angle));
-        player->velocity.y += PLAYER_VELOCITY * sin(deg_to_rad(player->angle));
+        player->velocity.x += PLAYER_VELOCITY/* * cos(deg_to_rad(player->angle))*/;
+        /*player->velocity.y += PLAYER_VELOCITY * sin(deg_to_rad(player->angle));*/
     }
 }
 

@@ -12,6 +12,10 @@ typedef struct tTileMap TileMap;
 #define WINDOW_WIDTH                            640
 #define WINDOW_HEIGHT                           480
 
+#define TEXT_FONT_PATH                          "res/OpenSans-Regular.ttf"
+#define TEXT_WAITING_FOR_PLAYERS                "Waiting for other players..."
+#define TEXT_FONT_SIZE                          48
+
 #define CAMERA_START_X                          1
 #define CAMERA_START_Y                          1
 #define CAMERA_WIDTH                            WINDOW_WIDTH
@@ -57,11 +61,11 @@ typedef struct tTileMap TileMap;
 #define BULLET_MAX_AMOUNT                       10
 #define BULLET_WIDTH                            12
 #define BULLET_HEIGHT                           20
-#define BULLET_TTL                              200 // distance
+#define BULLET_TTL                              400 // distance
 
-#define PLAYER_TEXTURE                          "res/player_texture.png"
-#define BULLET_TEXTURE                          "res/bullet_texture.png"
-#define POINTING_ARROW_TEXTURE                  "res/pointing_arrow_texture.png"
+#define PLAYER_TEXTURE                          "res/player/player_texture.png"
+#define BULLET_TEXTURE                          "res/bullets/bullet_texture.png"
+#define POINTING_ARROW_TEXTURE                  "res/arrow/pointing_arrow_texture.png"
 #define MISSING_TEXTURE                         "res/missing_texture.png"
 #define TILE_TEXTURE                            "res/map/0.png" // 0 will be changed to other numbers,
 #define TILE_TEXTURE_NUMBER_IDX                 8               // so max number of tiles mustn't exceed 9

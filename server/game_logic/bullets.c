@@ -39,19 +39,8 @@ void bullets_destroy(Bullets *bullets)
 static void bullet_swap(Bullet *bullet1, Bullet *bullet2)
 {
     Bullet temp = *bullet1;
-    bullet1->angle = bullet2->angle;
-    bullet1->ttl = bullet2->ttl;
-    bullet1->geometry.x = bullet2->geometry.x;
-    bullet1->geometry.y = bullet2->geometry.y;
-    bullet1->geometry.width = bullet2->geometry.width;
-    bullet1->geometry.height = bullet2->geometry.height;
-
-    bullet2->angle = temp.angle;
-    bullet2->ttl = temp.ttl;
-    bullet2->geometry.x = temp.geometry.x;
-    bullet2->geometry.y = temp.geometry.y;
-    bullet2->geometry.width = temp.geometry.width;
-    bullet2->geometry.height = temp.geometry.height;
+    memcpy(bullet2, bullet1, sizeof(Bullet));
+    memcpy(bullet1, &temp, sizeof(Bullet));
 }
 
 static bool bullet_need_disactivate(Bullet *bullet) {
