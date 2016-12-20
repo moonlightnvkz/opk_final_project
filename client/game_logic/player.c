@@ -235,7 +235,7 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
                        prev->player_state.position.y);
     }
     deque_iterator_destroy(&it);
-    // player_move_on(player, shift_after_last_request.x, shift_after_last_request.y);
+    player_move_on(player, shift_after_last_request.x, shift_after_last_request.y);
 }
 
 void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response) {
