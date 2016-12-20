@@ -207,6 +207,7 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
 
     // This request should be deleted, so there is special processing
     RequestStructure *request = (RequestStructure *) deque_remove_first(requests_list);
+    // Request number is equal to response number, but there is nothing else to apply
     if (deque_peek_first(requests_list) == NULL) {
         request_destroy(request);
         return;
@@ -219,7 +220,7 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
         request_destroy(request);
     }
 
-    // Apply shift from the request server doesn't know about
+    // Apply shift from the requests server doesn't know about
     Iterator it;
     deque_iterator_create(requests_list, &it);
     while (it.data != NULL) {
@@ -234,7 +235,7 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
                        prev->player_state.position.y);
     }
     deque_iterator_destroy(&it);
-    player_move_on(player, shift_after_last_request.x, shift_after_last_request.y);
+    // player_move_on(player, shift_after_last_request.x, shift_after_last_request.y);
 }
 
 void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response) {

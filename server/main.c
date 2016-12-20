@@ -43,22 +43,24 @@ int main(int argc , char *argv[])
 
     unsigned curr_ticks = 0, prev_ticks = 0;
     bool quit = false;
+    int results_of_receive[PLAYER_COUNT] = {0};
+
     while(true) {
         for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
-            int res;
-            res = sc_receive_request(&sc, i);
-            if (res == SC_CONNECTION_CLOSED || res == SC_UNSUPPORTED_PLAYER) {
+            results_of_receive[i] = sc_receive_request(&sc, i);
+            if (results_of_receive[i] == SC_CONNECTION_CLOSED || results_of_receive[i] == SC_UNSUPPORTED_PLAYER) {
                 quit = true;
                 break;
             }
-            if (res == SC_NO_ERROR) {
+            if (results_of_receive[i] == SC_NO_ERROR) {
                 request_log(&sc.request, "Request", __FUNCTION__, __LINE__);
                 mc_apply_request(&mc, i, &sc.request);
-
-                sc_create_responses(&sc, &mc, quit);
-                sc_send_response(&sc, i);
-                response_log(&sc.response, "Response", __FUNCTION__, __LINE__);
             }
+        }
+        sc_create_responses(&sc, &mc, quit);
+        response_log(&sc.response, "Response", __FUNCTION__, __LINE__);
+        for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+            sc_send_response(&sc, i);
         }
         if (quit) { // quit should be there because of sc_create_response(..., ..., quit);
             break;

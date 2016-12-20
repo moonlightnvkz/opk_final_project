@@ -40,7 +40,7 @@ void deque_add_first(Deque *pdeque, Pointer value)
 {
     assert(pdeque != NULL && pdeque->buffer != NULL);
     if (deque_full(pdeque) && pdeque->increment != 0)
-        deque_resize(pdeque, pdeque->size + pdeque->increment);
+        deque_resize(pdeque, 2 * pdeque->size);
     pdeque->data_start--;
     if (pdeque->data_start == pdeque->buffer - 1)
         pdeque->data_start = pdeque->buffer_end - 1;
@@ -52,7 +52,7 @@ void deque_add_last(Deque *pdeque, Pointer value)
 {
     assert(pdeque != NULL && pdeque->buffer != NULL);
     if (deque_full(pdeque) && pdeque->increment != 0)
-        deque_resize(pdeque, pdeque->size + pdeque->increment);
+        deque_resize(pdeque, 2 * pdeque->size);
     *pdeque->data_end = value;
     pdeque->data_end++;
     if (pdeque->data_end == pdeque->buffer_end)
@@ -72,7 +72,7 @@ Pointer deque_remove_first(Deque *pdeque)
     if (pdeque->size == 0)
         return 0;
     if (pdeque->increment != 0 && pdeque->buffer_end - pdeque->buffer - pdeque->size >= pdeque->increment)
-        deque_resize(pdeque, pdeque->buffer_end - pdeque->buffer - pdeque->increment);
+        deque_resize(pdeque, (pdeque->buffer_end - pdeque->buffer) / 2);
     Pointer poped = *pdeque->data_start;
     pdeque->data_start++;
     if (pdeque->data_start == pdeque->buffer_end)
@@ -92,7 +92,7 @@ Pointer deque_remove_last(Deque *pdeque)
         pdeque->data_end = pdeque->buffer_end - sizeof(Pointer);
     pdeque->size--;
     if (pdeque->increment != 0 && pdeque->buffer_end - pdeque->buffer - pdeque->size >= pdeque->increment)
-        deque_resize(pdeque, pdeque->buffer_end - pdeque->buffer - pdeque->increment);
+        deque_resize(pdeque, (pdeque->buffer_end - pdeque->buffer) / 2);
     return poped;
 }
 
