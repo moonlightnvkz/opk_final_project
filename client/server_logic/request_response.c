@@ -30,9 +30,9 @@ RequestStructure *request_create(MVC *mvc, unsigned number)
     request->req_number = number;
     request_set_player_states(request, player);
 
-    request->critical_event.type = mvc->criticalEvent.type;
-    request->critical_event.description = mvc->criticalEvent.description;
-    mvc->criticalEvent.type = CE_NONE;
+    request->critical_event.type = mvc->critical_event.type;
+    request->critical_event.description = mvc->critical_event.description;
+    mvc->critical_event.type = CE_NONE;
     return request;
 }
 

@@ -28,7 +28,7 @@ void log_message(const char *error_message, ...)
     if (log_file) {
         va_list valist;
         va_start(valist, error_message);
-        va_end(valist);
         vfprintf(log_file, error_message, valist);
+        va_end(valist);
     }
 }

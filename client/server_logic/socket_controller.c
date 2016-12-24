@@ -14,6 +14,8 @@
 
 static int sc_connect_to_server(SocketController *sc);
 
+static void sc_clear_response(ResponseStructure *res);
+
 bool sc_init(SocketController *sc)
 {
     assert(sc != NULL);
@@ -26,22 +28,12 @@ bool sc_init(SocketController *sc)
         return false;
     }
 
-    sc->last_response.res_number = 0;
-    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
-        sc->last_response.players[i].position.x = sc->last_response.players[i].position.y = 0;
-        sc->last_response.players[i].velocity.x = sc->last_response.players[i].velocity.y = 0;
-        sc->last_response.players[i].angle = 0;
-    }
-    sc->last_response.bullets.number = 0;
-    for (int i = 0; i < BULLET_MAX_AMOUNT; ++i) {
-        BulletStateResponse *bullet = sc->last_response.bullets.bullets + i;
-        bullet->angle = 0;
-        bullet->position.x = bullet->position.y = 0;
-        bullet->ttl = 0;
-    }
+    sc_clear_response(&sc->last_response);
+
     signal(SIGPIPE, SIG_IGN);
     return true;
 }
+
 void sc_destroy(SocketController *sc)
 {
     if (shutdown(sc->sock, 2) == -1) {
@@ -49,6 +41,34 @@ void sc_destroy(SocketController *sc)
     };
     close(sc->sock);
     deque_destroy(&sc->requests_list);
+}
+
+static void sc_clear_response(ResponseStructure *res)
+{
+    res->res_number = 0;
+    res->quit = false;
+    res->bullets.number = 0;
+    for (unsigned i = 0; i < BULLET_MAX_AMOUNT; ++i) {
+        BulletStateResponse *b = &res->bullets.bullets[i];
+        b->angle = 0;
+        b->position.x = b->position.y = 0;
+        b->ttl = 0;
+    }
+    res->explosives.number = 0;
+    for (unsigned i = 0; i < EXPLOSIVE_MAX_AMOUNT; ++i) {
+        ExplosiveStateResponse *e = &res->explosives.explosives[i];
+        e->is_damaged = e->is_exploding = false;
+        e->timer_damaged = e->timer_explosion = 0;
+        e->position_at_map.x = e->position_at_map.y = 0;
+    }
+    for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+        PlayerStateResponse *p = &res->players[i];
+        p->angle = 0;
+        p->is_alive = true;
+        p->position.x = PLAYER_START_X;
+        p->position.y = PLAYER_START_Y;
+        p->velocity.x = p->velocity.y = 0;
+    }
 }
 
 static int sc_connect_to_server(SocketController *sc) {
@@ -76,13 +96,13 @@ static int sc_connect_to_server(SocketController *sc) {
 int sc_send_current_state(SocketController *sc, MVC *mvc)
 {
     static unsigned last_send_time = 0;
-    if (mvc->criticalEvent.type == CE_NONE && last_send_time < 1 / SERVER_TICKRATE * 1000) {
+    if (mvc->critical_event.type == CE_NONE && (SDL_GetTicks() - last_send_time) < 1000.0 / SERVER_TICKRATE) {
         return SC_NO_ERROR;
     }
     RequestStructure *peeked = ((RequestStructure *) deque_peek_last(&sc->requests_list));
     unsigned last_number;
     if (peeked == NULL) {
-        last_number = 0;
+        last_number = 1;
     } else {
         last_number = peeked->req_number;
     }
@@ -95,6 +115,9 @@ int sc_send_current_state(SocketController *sc, MVC *mvc)
         return SC_SEND_FAILED;
     }
     request_log(req, "Send", __FUNCTION__, __LINE__);
+
+    mvc->critical_event.type = CE_NONE;
+
     return SC_NO_ERROR;
 }
 

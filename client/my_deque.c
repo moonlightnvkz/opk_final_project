@@ -71,8 +71,8 @@ Pointer deque_remove_first(Deque *pdeque)
     assert(pdeque != NULL && pdeque->buffer != NULL);
     if (pdeque->size == 0)
         return 0;
-    if (pdeque->increment != 0 && pdeque->buffer_end - pdeque->buffer - pdeque->size >= pdeque->increment)
-        deque_resize(pdeque, (pdeque->buffer_end - pdeque->buffer) / 2);
+    if (pdeque->size + 1 < (pdeque->buffer_end - pdeque->buffer) / 4)
+        deque_resize(pdeque, (pdeque->buffer_end - pdeque->buffer) / 4);
     Pointer poped = *pdeque->data_start;
     pdeque->data_start++;
     if (pdeque->data_start == pdeque->buffer_end)
@@ -91,8 +91,8 @@ Pointer deque_remove_last(Deque *pdeque)
     if (pdeque->data_end == pdeque->buffer - 1)
         pdeque->data_end = pdeque->buffer_end - sizeof(Pointer);
     pdeque->size--;
-    if (pdeque->increment != 0 && pdeque->buffer_end - pdeque->buffer - pdeque->size >= pdeque->increment)
-        deque_resize(pdeque, (pdeque->buffer_end - pdeque->buffer) / 2);
+    if (pdeque->size + 1 < (pdeque->buffer_end - pdeque->buffer) / 4)
+        deque_resize(pdeque, (pdeque->buffer_end - pdeque->buffer) / 4);
     return poped;
 }
 
@@ -154,18 +154,25 @@ void deque_tune(Deque *pdeque, size_t initial_size, size_t increment)
 
 Pointer deque_iterator_next(Deque *pqueue, Iterator *it)
 {
-    if (pqueue->size == 0)
-        return NULL;
-    if (it->data == pqueue->data_end - 1) {
+    if (pqueue->size <= 1) {
         *it->data = NULL;
         return NULL;
     }
-    else
-        it->data++;
+    it->data++;
+    if (it->data == pqueue->buffer_end) {
+        it->data = pqueue->buffer;
+    }
+    if (it->data == pqueue->data_end) {
+        *it->data = NULL;
+        return NULL;
+    }
     return *it->data;
 }
 
 Pointer deque_iterator_get_data(Iterator *it) {
+    if (it->data == NULL) {
+        return NULL;
+    }
     return *it->data;
 }
 
@@ -176,5 +183,6 @@ Iterator *deque_iterator_create(Deque *pqueue, Iterator *it) {
 }
 
 void deque_iterator_destroy(Iterator *it) {
+    it->data = NULL;
     return;
 }

@@ -9,8 +9,6 @@
 
 // TODO: bullets reflection on static objects
 
-// TODO: will not be done: camera(player) -> camera(mouse) - need to warp mouse to the center after each loop...
-
 // TODO: big boom
 
 // TODO: serialization / deserialization
@@ -23,14 +21,14 @@ int main(int argc , char *argv[])
     if (!mvc_init(&mvc)) {
         LOG_ERROR("Failed to create mvc");
         logger_destroy();
-        exit(2);
+        return 1;
     }
     SocketController socketController;
     if (!sc_init(&socketController)) {
         LOG_ERROR("Failed to create socket controller");
         mvc_destroy(&mvc);
         logger_destroy();
-        exit(2);
+        return 2;
     }
     SDL_RenderClear(mvc.renderer);
     text_render_text(&mvc.text, TEXT_WAITING_FOR_PLAYERS, mvc.renderer, 0, 255, 0);
@@ -41,6 +39,7 @@ int main(int argc , char *argv[])
         mvc_destroy(&mvc);
         sc_destroy(&socketController);
         logger_destroy();
+        return 3;
     }
     text_free_last_text(&mvc.text);
 
@@ -66,15 +65,22 @@ int main(int argc , char *argv[])
 
         mvc_process_moving(&mvc, curr_ticks - prev_ticks);
 
+        //unsigned time = SDL_GetTicks();
         sc_send_current_state(&socketController, &mvc);
+        //LOG_ACTION("send:%d", SDL_GetTicks() - time);
 
+        //time = SDL_GetTicks();
         res = sc_receive_current_state(&socketController);
+        //LOG_ACTION("recv:%d", SDL_GetTicks() - time);
+
         if (res == SC_CONNECTION_CLOSED) {
             LOG_ACTION(Connection closed);
             break;
         }
         if (res == SC_NO_ERROR) {
+            //time = SDL_GetTicks();
             mvc_apply_response(&mvc, &socketController.requests_list, &socketController.last_response);
+            //LOG_ACTION("appl:%d", SDL_GetTicks() - time);
         }
 
         mvc_render(&mvc);

@@ -37,8 +37,9 @@ typedef struct tTileMap TileMap;
 #define BULLET_HIEGHT                           20
 #define BULLET_TTL                              400
 
-#define SERVER_IP                               "127.0.0.1"
+#define SERVER_IP                               "192.168.1.34"
 #define SERVER_PORT                             8888
+#define SERVER_TICKRATE                         20
 #define SERVER_START_SIGNAL                     'S'
 
 #define PLAYERS_ALIVE_TO_END_THE_GAME           0

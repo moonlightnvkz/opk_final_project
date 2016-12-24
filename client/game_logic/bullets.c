@@ -49,8 +49,8 @@ void bullets_destroy(Bullets *bullets)
 static void bullet_swap(Bullet *bullet1, Bullet *bullet2)
 {
     Bullet temp = *bullet1;
-    memcpy(bullet2, bullet1, sizeof(Bullet));
-    memcpy(bullet1, &temp, sizeof(Bullet));
+    memcpy(bullet1, bullet2, sizeof(Bullet));
+    memcpy(bullet2, &temp, sizeof(Bullet));
 }
 
 static bool bullet_need_disactivate(Bullet *bullet) {

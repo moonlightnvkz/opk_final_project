@@ -71,7 +71,7 @@ typedef struct tTileMap TileMap;
 #define TILE_TEXTURE_NUMBER_IDX                 8               // so max number of tiles mustn't exceed 9
 #define MAP_LOAD_FILE                           "res/map/tilemap"
 
-#define SERVER_IP                               "127.0.0.1"
+#define SERVER_IP                               "192.168.1.34"
 #define SERVER_PORT                             8888
 #define SERVER_TICKRATE                         20
 #define SERVER_START_SIGNAL                     'S'

@@ -32,7 +32,7 @@ typedef struct tMVC {
     TileMap map;
     Player players[PLAYER_COUNT];
     Bullets bullets;
-    CriticalEvent criticalEvent;
+    CriticalEvent critical_event;
 } MVC;
 
 bool mvc_init(MVC *mvc);

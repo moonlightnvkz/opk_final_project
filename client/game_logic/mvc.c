@@ -72,8 +72,8 @@ bool mvc_init(MVC *mvc)
         return false;
     }
 
-    mvc->criticalEvent.type = CE_NONE;
-    mvc->criticalEvent.description = 0;
+    mvc->critical_event.type = CE_NONE;
+    mvc->critical_event.description = 0;
     return true;
 }
 
@@ -130,8 +130,8 @@ int mvc_process_key(MVC *mvc, const Uint8 *keystates)
 
     if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
         if (player_do_shot(mvc->players + GlobalVariables.number_of_player, &mvc->bullets)) {
-            mvc->criticalEvent.type = CE_SHOT_DONE;
-            mvc->criticalEvent.description = GlobalVariables.number_of_player;
+            mvc->critical_event.type = CE_SHOT_DONE;
+            mvc->critical_event.description = GlobalVariables.number_of_player;
         }
     }
     return MVC_NO_ERRORS;
@@ -153,8 +153,8 @@ void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
 
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (alive_flag_states[i] != mvc->players[i].is_alive) {
-            mvc->criticalEvent.type = CE_DEATH;
-            mvc->criticalEvent.description = i;
+            mvc->critical_event.type = CE_DEATH;
+            mvc->critical_event.description = i;
             break;
         }
     }
@@ -166,6 +166,10 @@ void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_
 {
     GlobalVariables.quit = last_response->quit;
 
+    // First response (without request sended)
+    if (last_response->res_number == 0) {
+        return;
+    }
     player_apply_response_this(mvc->players + GlobalVariables.number_of_player, requests_list, last_response);
     player_apply_response_others(mvc->players, last_response);
 

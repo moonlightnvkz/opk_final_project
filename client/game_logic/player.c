@@ -19,6 +19,10 @@
 #define M_PI 3.14159265358979323846	/* pi */
 #endif
 
+#ifndef M_SQRT2
+#define M_SQRT2	1.41421356237309504880	/* sqrt(2) */
+#endif
+
 static void player_move_on(Player *player, float dx, float dy);
 
 static void player_move_to(Player *player, float x, float y);
@@ -144,6 +148,11 @@ void player_keystates_process(Player *player, const Uint8 *keystates)
         player->velocity.x += PLAYER_VELOCITY/* * cos(deg_to_rad(player->angle))*/;
         /*player->velocity.y += PLAYER_VELOCITY * sin(deg_to_rad(player->angle));*/
     }
+
+//    if (player->velocity.x != 0 && player->velocity.y != 0) {
+//        player->velocity.x /= M_SQRT2;
+//        player->velocity.y /= M_SQRT2;
+//    }
 }
 
 void player_angle_process(Player *player, Camera *camera)

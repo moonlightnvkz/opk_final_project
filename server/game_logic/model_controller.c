@@ -12,6 +12,10 @@
 #include "../default_values.h"
 #include "explosives.h"
 
+#ifndef M_SQRT2
+#define M_SQRT2	1.41421356237309504880	/* sqrt(2) */
+#endif
+
 void mc_check_request_and_fix(ModelController *mc, unsigned number_of_player, RequestStructure *request);
 
 bool mc_init(ModelController *mc)
@@ -91,6 +95,10 @@ void mc_check_request_and_fix(ModelController *mc, unsigned number_of_player, Re
     if (request->player_state.velocity.y > PLAYER_VELOCITY) {
         request->player_state.velocity.y = PLAYER_VELOCITY;
     }
+//    if (request->player_state.velocity.x != 0 && request->player_state.velocity.y != 0) {
+//        player->velocity.x /= M_SQRT2;
+//        player->velocity.y /= M_SQRT2;
+//    }
     unsigned time_elapsed = SDL_GetTicks() - player->last_request_time;
     float shift_x = request->player_state.position.x - player->geometry.x;
     float shift_y = request->player_state.position.y - player->geometry.y;

@@ -34,7 +34,7 @@ void response_set_bullets_states(BulletsStateResponse *state, Bullets *bullets)
 void response_set_explosives_state(ExplosivesStateResponse *state, Explosives *explosives)
 {
     state->number = explosives->number;
-    for (unsigned i = 0; i < EXPLOSIVE_MAX_AMOUNT; ++i) {
+    for (unsigned i = 0; i < explosives->number; ++i) {
         Explosive *explosive = &explosives->explosives[i];
         ExplosiveStateResponse *exp_state = &state->explosives[i];
         exp_state->is_damaged = explosive->is_damaged;
@@ -48,24 +48,24 @@ void response_set_explosives_state(ExplosivesStateResponse *state, Explosives *e
 
 void request_log(RequestStructure *req, char* msg, const char* function, const unsigned line)
 {
-    LOG_ACTION("%s:%d:%s|%d|%d %d",
-               function,
-               line,
-               msg,
-               req->req_number,
-               req->critical_event.type,
-               req->critical_event.description);
+//    LOG_ACTION("%s:%d:%s|%d|%d %d",
+//               function,
+//               line,
+//               msg,
+//               req->req_number,
+//               req->critical_event.type,
+//               req->critical_event.description);
 }
 
 void response_log(ResponseStructure *res, char* msg, const char* function, const unsigned line)
 {
-    LOG_ACTION("%s:%d:%s|%d %d %d %d %d",
-               function,
-               line,
-               msg,
-               res->res_number,
-               res->players[0].is_alive,
-               res->players[1].is_alive,
-               res->bullets.number,
-               res->explosives.number);
+//    LOG_ACTION("%s:%d:%s|%d %d %d %d %d",
+//               function,
+//               line,
+//               msg,
+//               res->res_number,
+//               res->players[0].is_alive,
+//               res->players[1].is_alive,
+//               res->bullets.number,
+//               res->explosives.number);
 }

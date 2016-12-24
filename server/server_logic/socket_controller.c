@@ -10,6 +10,9 @@
 #include "socket_controller.h"
 #include "../loggers.h"
 #include "../game_logic/model_controller.h"
+#include <signal.h>
+
+static void sc_clear_response(ResponseStructure *res);
 
 bool sc_init(SocketController *sc)
 {
@@ -32,7 +35,10 @@ bool sc_init(SocketController *sc)
         return false;
     }
 
+    sc_clear_response(&sc->response);
     listen(sc->socket_desc , 3);
+
+    signal(SIGPIPE, SIG_IGN);
 
     LOG_ERROR("Server listen at %d:%d", INADDR_ANY, SERVER_PORT);
     return true;
@@ -45,6 +51,34 @@ void sc_destroy(SocketController *sc)
         close(sc->player_sockets[i]);
     }
     close(sc->socket_desc);
+}
+
+static void sc_clear_response(ResponseStructure *res)
+{
+    res->res_number = 0;
+    res->quit = false;
+    res->bullets.number = 0;
+    for (unsigned i = 0; i < BULLET_MAX_AMOUNT; ++i) {
+        BulletStateResponse *b = &res->bullets.bullets[i];
+        b->angle = 0;
+        b->position.x = b->position.y = 0;
+        b->ttl = 0;
+    }
+    res->explosives.number = 0;
+    for (unsigned i = 0; i < BULLET_MAX_AMOUNT; ++i) {
+        ExplosiveStateResponse *e = &res->explosives.explosives[i];
+        e->is_damaged = e->is_exploding = false;
+        e->timer_damaged = e->timer_explosion = 0;
+        e->position_at_map.x = e->position_at_map.y = 0;
+    }
+    for (unsigned i = 0; i < BULLET_MAX_AMOUNT; ++i) {
+        PlayerStateResponse *p = &res->players[i];
+        p->angle = 0;
+        p->is_alive = true;
+        p->position.x = PLAYER_X;
+        p->position.y = PLAYER_Y;
+        p->velocity.x = p->velocity.y = 0;
+    }
 }
 
 int sc_accept_player(SocketController *sc, unsigned number_of_player)
@@ -72,7 +106,7 @@ int sc_receive_request(SocketController *sc, unsigned number_of_player)
         return SC_UNSUPPORTED_PLAYER;
     }
 
-    ssize_t read_size = recv(sc->player_sockets[number_of_player] , &sc->request , sizeof(RequestStructure) , 0);
+    ssize_t read_size = recv(sc->player_sockets[number_of_player] , &sc->request , sizeof(RequestStructure) , MSG_DONTWAIT);
     if(read_size == 0) {
         LOG_ACTION("Player %d disconnected", number_of_player);
         return SC_CONNECTION_CLOSED;
@@ -103,7 +137,7 @@ int sc_send_response(SocketController *sc, unsigned number_of_player)
         return SC_UNSUPPORTED_PLAYER;
     }
     sc->response.res_number = sc->request_numbers[number_of_player];
-    if(send(sc->player_sockets[number_of_player], &sc->response, sizeof(ResponseStructure), MSG_DONTWAIT) < sizeof(ResponseStructure))
+    if(send(sc->player_sockets[number_of_player], &sc->response, sizeof(ResponseStructure), MSG_DONTWAIT | MSG_NOSIGNAL) < sizeof(ResponseStructure))
     {
         LOG_ERROR("Send failed (player %d)", number_of_player);
         return SC_SEND_FAILED;
