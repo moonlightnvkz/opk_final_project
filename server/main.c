@@ -4,11 +4,19 @@
 #include "loggers.h"
 #include "game_logic/model_controller.h"
 #include "server_logic/socket_controller.h"
+#include "globals.h"
 
 int main(int argc , char *argv[])
 {
-    logger_init();
-    globals_init();
+    if (!logger_init()) {
+        LOG_ERROR("Failed to initialize logger");
+        return 1;
+    }
+    if (!globals_init()) {
+        LOG_ERROR("Failed to initialize global variables");
+        logger_destroy();
+        return 1;
+    }
     ModelController mc;
     if (!mc_init(&mc)) {
         LOG_ERROR("Failed to initialize model controller");
@@ -20,7 +28,7 @@ int main(int argc , char *argv[])
         LOG_ERROR("Failed to initialize socket controller");
         mc_destroy(&mc);
         logger_destroy();
-        return 2;
+        return 1;
     }
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (sc_accept_player(&sc, i) != SC_NO_ERROR) {
@@ -73,7 +81,7 @@ int main(int argc , char *argv[])
             break;
         }
         mc_process_moving(&mc, curr_ticks - prev_ticks);
-        if (mc_alive_players_count(&mc) <= PLAYERS_ALIVE_TO_END_THE_GAME) {
+        if (mc_alive_players_count(&mc) <= GlobalVariables.players_alive_to_end_the_game) {
             quit = true;
         }
         prev_ticks = curr_ticks;

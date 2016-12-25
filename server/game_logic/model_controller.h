@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../default_values.h"
+#include "../defines.h"
 #include "bullets.h"
 #include "player.h"
 #include "tile_map.h"

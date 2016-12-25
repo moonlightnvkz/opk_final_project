@@ -10,6 +10,7 @@
 
 typedef struct tBullets Bullets;
 typedef struct tRequestStructure RequestStructure;
+typedef struct tTileMap TileMap;
 
 
 typedef struct tPlayer {
@@ -26,7 +27,7 @@ bool player_create(Player *player);
 
 void player_destroy(Player *player);
 
-void player_move(Player *player, unsigned delta_ticks);
+void player_move(Player *player, unsigned delta_ticks, TileMap *map);
 
 void player_do_shot(Player *player, Bullets *bullets);
 

@@ -6,7 +6,7 @@
 
 #include <SDL_system.h>
 #include "geometry.h"
-#include "../default_values.h"
+#include "../defines.h"
 #include "explosives.h"
 
 typedef struct tCamera Camera;
@@ -29,7 +29,7 @@ typedef struct tMapDescription {
 
 
 typedef struct tTileMap {
-    Vector2i size;
+    ObjectGeometry geometry;
     MapDescription map_descr;
     Tile tiles[MAP_TILE_NUMBER];
     Vector2i tile_size;
@@ -40,8 +40,8 @@ bool tilemap_create(TileMap *map, SDL_Renderer *renderer);
 
 void tilemap_destroy(TileMap *map);
 
-bool tilemap_collision_check(ObjectGeometry geom);
+bool tilemap_collision_check(TileMap *map, ObjectGeometry geom);
 
-void tilemap_coords_to_tiles(ObjectGeometry geom, unsigned *x1, unsigned *x2, unsigned *y1, unsigned *y2);
+void tilemap_coords_to_tiles(TileMap *map, ObjectGeometry geom, unsigned *x1, unsigned *x2, unsigned *y1, unsigned *y2);
 
 void tilemap_render(TileMap *map, SDL_Renderer *renderer, Camera *camera);

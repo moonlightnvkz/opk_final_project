@@ -4,6 +4,7 @@
 #include "loggers.h"
 #include "game_logic/mvc.h"
 #include "server_logic/socket_controller.h"
+#include "globals.h"
 
 // TODO: UI
 
@@ -30,6 +31,8 @@ int main(int argc , char *argv[])
         logger_destroy();
         return 2;
     }
+
+    // render waiting text
     SDL_RenderClear(mvc.renderer);
     text_render_text(&mvc.text, TEXT_WAITING_FOR_PLAYERS, mvc.renderer, 0, 255, 0);
     SDL_RenderPresent(mvc.renderer);

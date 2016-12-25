@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 #include "../game_logic/geometry.h"
-#include "../default_values.h"
+#include "../defines.h"
 
 typedef struct tPlayer Player;
 typedef struct tBullets Bullets;

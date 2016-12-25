@@ -6,12 +6,13 @@
 
 #include <SDL_system.h>
 #include "geometry.h"
-#include "../default_values.h"
+#include "../defines.h"
 
 typedef struct tBullets Bullets;
 typedef struct tResponseStructure ResponseStructure;
 typedef struct tDeque Deque;
 typedef struct tCamera Camera;
+typedef struct tTileMap TileMap;
 
 typedef struct tPlayer {
     bool is_alive;
@@ -32,7 +33,7 @@ void player_keystates_process(Player *player, const Uint8 *keystates);
 
 void player_angle_process(Player *player, Camera *camera);
 
-void player_move(Player *player, unsigned delta_ticks);
+void player_move(Player *player, unsigned delta_ticks, TileMap *map);
 
 void player_render(Player *player, SDL_Renderer *renderer, Camera *camera);
 
@@ -40,6 +41,6 @@ bool player_do_shot(Player *player, Bullets *bullets);
 
 void player_kill(Player *player);
 
-void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response);
+void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response, TileMap *map);
 
 void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response);

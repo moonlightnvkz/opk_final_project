@@ -4,11 +4,6 @@
 
 #pragma once
 
-#include "game_logic/geometry.h"
-
-typedef struct tMapDescription MapDescription;
-typedef struct tTileMap TileMap;
-
 #define WINDOW_WIDTH                            640
 #define WINDOW_HEIGHT                           480
 
@@ -71,19 +66,6 @@ typedef struct tTileMap TileMap;
 #define TILE_TEXTURE_NUMBER_IDX                 8               // so max number of tiles mustn't exceed 9
 #define MAP_LOAD_FILE                           "res/map/tilemap"
 
-#define SERVER_IP                               "192.168.1.34"
-#define SERVER_PORT                             8888
 #define SERVER_TICKRATE                         20
 #define SERVER_START_SIGNAL                     'S'
-
-
-struct tGlobalVariables {
-    bool quit;
-    unsigned number_of_player;
-    ObjectGeometry map_geometry;
-    Vector2i tile_size;
-    TileMap *map;
-    MapDescription *map_descr;
-} GlobalVariables;
-
-void globals_init();
+#define SERVER_CONF_FILE                        "conf/server"

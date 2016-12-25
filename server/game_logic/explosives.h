@@ -5,10 +5,10 @@
 #pragma once
 
 #include "geometry.h"
-#include "../default_values.h"
+#include "../defines.h"
 
-typedef struct tCamera Camera;
 typedef struct tPlayer Player;
+typedef struct tTileMap TileMap;
 
 typedef struct tExplosive {
     Vector2f size;
@@ -32,6 +32,6 @@ Explosive *explosives_get_explosive_on(Explosives *explosives, int w, int h);
 
 void explosive_on_damage(Explosive *explosive);
 
-void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, Player *players);
+void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, TileMap *map, Player *players);
 
 bool exposives_add_explosive(Explosives *explosives, int w, int h);

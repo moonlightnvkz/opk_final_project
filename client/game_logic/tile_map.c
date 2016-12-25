@@ -5,18 +5,20 @@
 #include <assert.h>
 #include "tile_map.h"
 #include "../loggers.h"
-#include "../default_values.h"
+#include "../defines.h"
 #include "sdl_helpers.h"
 #include "camera.h"
 #include "explosives.h"
+#include "../globals.h"
 
 bool tilemap_load_from_file(TileMap *map, const char * file_path);
 
 bool tilemap_create(TileMap *map, SDL_Renderer *renderer)
 {
     assert(map != NULL);
-    map->size.x = MAP_WIDTH;
-    map->size.y = MAP_HEIGHT;
+    map->geometry.x = map->geometry.y = 0;
+    map->geometry.width = MAP_WIDTH;
+    map->geometry.height = MAP_HEIGHT;
 
     map->map_descr.width = MAP_WIDTH / TILE_WIDTH;
     map->map_descr.height = MAP_HEIGHT / TILE_HEIGHT;
@@ -24,14 +26,9 @@ bool tilemap_create(TileMap *map, SDL_Renderer *renderer)
     map->tile_size.x = TILE_WIDTH;
     map->tile_size.y = TILE_HEIGHT;
 
-    GlobalVariables.tile_size.x = TILE_WIDTH;
-    GlobalVariables.tile_size.y = TILE_HEIGHT;
-
     if (!tilemap_load_from_file(map, MAP_LOAD_FILE)) {
         return false;
     }
-
-    GlobalVariables.map_descr = &map->map_descr;
 
     char tile_path[] = TILE_TEXTURE;
     for (unsigned i = 0; i < MAP_TILE_NUMBER; ++i) {
@@ -64,7 +61,6 @@ bool tilemap_create(TileMap *map, SDL_Renderer *renderer)
             }
         }
     }
-    GlobalVariables.map = map;
     return true;
 }
 
@@ -94,20 +90,20 @@ bool tilemap_load_from_file(TileMap *map, const char * file_path)
     return true;
 }
 
-bool tilemap_collision_check(ObjectGeometry geom)
+bool tilemap_collision_check(TileMap *map, ObjectGeometry geom)
 {
     unsigned tile_x1, tile_x2, tile_y1, tile_y2;
 
-    tilemap_coords_to_tiles(geom, &tile_x1, &tile_x2, &tile_y1, &tile_y2);
+    tilemap_coords_to_tiles(map, geom, &tile_x1, &tile_x2, &tile_y1, &tile_y2);
 
-    MapDescription *map_descr = GlobalVariables.map_descr;
+    MapDescription *map_descr = &map->map_descr;
     for (unsigned i = tile_x1; i <= tile_x2; ++i) {
         for (unsigned j = tile_y1; j <= tile_y2; ++j) {
             if (map_descr->map_descr[j][i] == TM_BLOCK) {
                 return false;
             }
             if (map_descr->map_descr[j][i] == TM_EXPLOSIVE) {
-                explosive_on_damage(explosives_get_explosive_on(&GlobalVariables.map->explosives, i, j));
+                explosive_on_damage(explosives_get_explosive_on(&map->explosives, i, j));
                 return false;
             }
         }
@@ -115,13 +111,13 @@ bool tilemap_collision_check(ObjectGeometry geom)
     return true;
 }
 
-void tilemap_coords_to_tiles(ObjectGeometry geom, unsigned *x1, unsigned *x2, unsigned *y1, unsigned *y2)
+void tilemap_coords_to_tiles(TileMap *map, ObjectGeometry geom, unsigned *x1, unsigned *x2, unsigned *y1, unsigned *y2)
 {
-    MapDescription *map_descr = GlobalVariables.map_descr;
-    int tile_x1 = (int)  geom.x / GlobalVariables.tile_size.x;
-    int tile_y1 = (int)  geom.y / GlobalVariables.tile_size.y;
-    int tile_x2 = (int) (geom.x + geom.width) / GlobalVariables.tile_size.x;
-    int tile_y2 = (int) (geom.y + geom.height) / GlobalVariables.tile_size.y;
+    MapDescription *map_descr = &map->map_descr;
+    int tile_x1 = (int)  geom.x / map->tile_size.x;
+    int tile_y1 = (int)  geom.y / map->tile_size.y;
+    int tile_x2 = (int) (geom.x + geom.width) / map->tile_size.x;
+    int tile_y2 = (int) (geom.y + geom.height) / map->tile_size.y;
 
     tile_x1 < 0 ? (tile_x1 = 0) : 0;
     tile_x2 < 0 ? (tile_x2 = 0) : 0;
@@ -158,7 +154,7 @@ void tilemap_render(TileMap *map, SDL_Renderer *renderer, Camera *camera) {
             }
 
             if (tile_type == TM_EXPLOSIVE) {
-                explosives_render_exposive(explosives_get_explosive_on(&map->explosives, tw, th), renderer, camera);
+                explosives_render_exposive(explosives_get_explosive_on(&map->explosives, tw, th), renderer, camera, map);
             } else {
                 render_texture(map->tiles[tile_type].texture, renderer, w, h, map->tile_size.x, map->tile_size.y);
             }

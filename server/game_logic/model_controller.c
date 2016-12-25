@@ -9,7 +9,7 @@
 #include "bullets.h"
 #include "../server_logic/request_response.h"
 #include "../loggers.h"
-#include "../default_values.h"
+#include "../defines.h"
 #include "explosives.h"
 
 #ifndef M_SQRT2
@@ -55,11 +55,11 @@ void mc_destroy(ModelController *mc)
 void mc_process_moving(ModelController *mc, unsigned delta_ticks)
 {
     for (size_t i = 0; i < PLAYER_COUNT; ++i) {
-        player_move(mc->players + i, delta_ticks);
+        player_move(mc->players + i, delta_ticks, &mc->map);
     }
-    bullets_move_all(&mc->bullets, delta_ticks, mc->players);
+    bullets_move_all(&mc->bullets, delta_ticks, &mc->map, mc->players);
 
-    explosives_explode_process(&mc->map.explosives, delta_ticks, mc->players);
+    explosives_explode_process(&mc->map.explosives, delta_ticks, &mc->map, mc->players);
 }
 
 int mc_alive_players_count(ModelController *mc)

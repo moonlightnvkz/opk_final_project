@@ -11,10 +11,13 @@
 #include "../game_logic/player.h"
 #include "../loggers.h"
 #include "../game_logic/mvc.h"
+#include "../globals.h"
 
 static int sc_connect_to_server(SocketController *sc);
 
 static void sc_clear_response(ResponseStructure *res);
+
+static bool read_ip(const char *file, char *ip, uint16_t *port);
 
 bool sc_init(SocketController *sc)
 {
@@ -23,7 +26,6 @@ bool sc_init(SocketController *sc)
     deque_create(&sc->requests_list);
 
     if (sc_connect_to_server(sc) != 0) {
-        LOG_ERROR("Failed to connect to the server");
         sc_destroy(sc);
         return false;
     }
@@ -79,9 +81,16 @@ static int sc_connect_to_server(SocketController *sc) {
         return SC_SOCKET_CREATION_ERROR;
     }
 
-    sc->server.sin_addr.s_addr = inet_addr(SERVER_IP);
+    // "xxx.xxx.xxx.xxx\0"
+    char ip[16] = {0};
+    uint16_t port = 0;
+    if (!read_ip(SERVER_CONF_FILE, ip, &port)) {
+        return SC_READ_IP_FAILED;
+    }
+
+    sc->server.sin_addr.s_addr = inet_addr(ip);
     sc->server.sin_family = AF_INET;
-    sc->server.sin_port = htons(SERVER_PORT);
+    sc->server.sin_port = htons(port);
 
     //Connect to remote server
     if (connect(sc->sock, (struct sockaddr *) &sc->server, sizeof(sc->server)) < 0) {
@@ -91,6 +100,55 @@ static int sc_connect_to_server(SocketController *sc) {
 
     LOG_ACTION("Connected");
     return SC_NO_ERROR;
+}
+
+static bool read_ip(const char *file, char *ip, uint16_t *port)
+{
+    FILE *conf = fopen(file, "r");
+    if (!conf) {
+        LOG_ERROR("Failed to open server conf file");
+        return false;
+    }
+    int ip_part = 0;
+    int offset = 0;
+
+    bool error = false;
+
+    for (unsigned i = 0; i < 4; ++i) {
+        if (fscanf(conf, "%d%*c", &ip_part) != 1) {
+            LOG_ERROR("Wrong ip format");
+            error = true;
+            break;
+        }
+        if (ip_part > 255 || ip_part < 0) {
+            LOG_ERROR("Wrong ip format:%d octet", i);
+            error = true;
+            break;
+        }
+        sprintf(ip + offset, "%d", ip_part);
+        if (ip_part < 10) {
+            offset += 1;
+        } else if (ip_part < 100) {
+            offset += 2;
+        } else {
+            offset +=3;
+        }
+        if (i != 3) {
+            sprintf(ip + offset, ".");
+            offset++;
+        }
+    }
+
+    if (!error && fscanf(conf, "%hu", port) != 1) {
+        LOG_ERROR("Wrong port format");
+        error = true;
+    }
+    if (!error && port < 0) {
+        LOG_ERROR("Port can't be negative");
+        error = true;
+    }
+    fclose(conf);
+    return !error;
 }
 
 int sc_send_current_state(SocketController *sc, MVC *mvc)
@@ -160,7 +218,7 @@ int sc_receive_start_signal(SocketController *sc)
     if (start_signal.symbol != SERVER_START_SIGNAL) {
         return SC_START_SIGNAL_MATHCHING_ERROR;
     }
-    GlobalVariables.number_of_player = start_signal.number_of_player;
-    LOG_ERROR("Start signal received:%c - %d", start_signal.symbol, GlobalVariables.number_of_player);
+    GlobalVariables.number_of_the_player = start_signal.number_of_player;
+    LOG_ERROR("Start signal received:%c - %d", start_signal.symbol, GlobalVariables.number_of_the_player);
     return SC_NO_ERROR;
 }

@@ -4,7 +4,7 @@
 
 #include <assert.h>
 #include "text.h"
-#include "../default_values.h"
+#include "../defines.h"
 #include "../loggers.h"
 #include "sdl_helpers.h"
 

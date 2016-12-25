@@ -7,6 +7,7 @@
 #include "../server_logic/request_response.h"
 #include "mvc.h"
 #include "../loggers.h"
+#include "../globals.h"
 
 bool mvc_init(MVC *mvc)
 {
@@ -101,14 +102,14 @@ void mvc_render(MVC *mvc)
 {
     SDL_RenderClear(mvc->renderer);
     tilemap_render(&mvc->map, mvc->renderer, &mvc->camera);
-    Vector2f pa_from = {mvc->players[GlobalVariables.number_of_player].geometry.x +
-                                mvc->players[GlobalVariables.number_of_player].geometry.width  / 2.f,
-                        mvc->players[GlobalVariables.number_of_player].geometry.y +
-                                mvc->players[GlobalVariables.number_of_player].geometry.height / 2.f};
+    Vector2f pa_from = {mvc->players[GlobalVariables.number_of_the_player].geometry.x +
+                                mvc->players[GlobalVariables.number_of_the_player].geometry.width  / 2.f,
+                        mvc->players[GlobalVariables.number_of_the_player].geometry.y +
+                                mvc->players[GlobalVariables.number_of_the_player].geometry.height / 2.f};
 
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         player_render(mvc->players + i, mvc->renderer, &mvc->camera);
-        if (i != GlobalVariables.number_of_player) {
+        if (i != GlobalVariables.number_of_the_player) {
             Vector2f pa_to = {mvc->players[i].geometry.x + mvc->players[i].geometry.width  / 2.f,
                               mvc->players[i].geometry.y + mvc->players[i].geometry.height / 2.f};
             camera_render_pointing_arrow(&mvc->camera, mvc->renderer, pa_from, pa_to);
@@ -124,14 +125,14 @@ int mvc_process_key(MVC *mvc, const Uint8 *keystates)
         return MVC_EXIT_KEY_PRESSED;
     }
 
-    player_angle_process(mvc->players + GlobalVariables.number_of_player, &mvc->camera);
+    player_angle_process(mvc->players + GlobalVariables.number_of_the_player, &mvc->camera);
 
-    player_keystates_process(mvc->players + GlobalVariables.number_of_player, keystates);
+    player_keystates_process(mvc->players + GlobalVariables.number_of_the_player, keystates);
 
     if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
-        if (player_do_shot(mvc->players + GlobalVariables.number_of_player, &mvc->bullets)) {
+        if (player_do_shot(mvc->players + GlobalVariables.number_of_the_player, &mvc->bullets)) {
             mvc->critical_event.type = CE_SHOT_DONE;
-            mvc->critical_event.description = GlobalVariables.number_of_player;
+            mvc->critical_event.description = GlobalVariables.number_of_the_player;
         }
     }
     return MVC_NO_ERRORS;
@@ -140,7 +141,7 @@ int mvc_process_key(MVC *mvc, const Uint8 *keystates)
 void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
 {
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
-        player_move(mvc->players + i, delta_ticks);
+        player_move(mvc->players + i, delta_ticks, &mvc->map);
     }
 
     bool alive_flag_states[PLAYER_COUNT];
@@ -148,8 +149,8 @@ void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
         alive_flag_states[i] = mvc->players[i].is_alive;
     }
 
-    bullets_move_all(&mvc->bullets, delta_ticks, mvc->players);
-    explosives_explode_process(&mvc->map.explosives, delta_ticks, mvc->players);
+    bullets_move_all(&mvc->bullets, delta_ticks, &mvc->map, mvc->players);
+    explosives_explode_process(&mvc->map.explosives, delta_ticks, &mvc->map, mvc->players);
 
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (alive_flag_states[i] != mvc->players[i].is_alive) {
@@ -159,7 +160,7 @@ void mvc_process_moving(MVC *mvc, unsigned delta_ticks)
         }
     }
     //camera_move_after_the_player(&mvc->camera, mvc->players + GlobalVariables.description);
-    camera_move_after_the_mouse(&mvc->camera, &mvc->players[GlobalVariables.number_of_player]);
+    camera_move_after_the_mouse(&mvc->camera, &mvc->map, &mvc->players[GlobalVariables.number_of_the_player]);
 }
 
 void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_response)
@@ -170,7 +171,7 @@ void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_
     if (last_response->res_number == 0) {
         return;
     }
-    player_apply_response_this(mvc->players + GlobalVariables.number_of_player, requests_list, last_response);
+    player_apply_response_this(mvc->players + GlobalVariables.number_of_the_player, requests_list, last_response, &mvc->map);
     player_apply_response_others(mvc->players, last_response);
 
     bullets_apply_response(&mvc->bullets, &last_response->bullets);

@@ -4,8 +4,10 @@
 
 #include <SDL_mouse.h>
 #include "camera.h"
-#include "../default_values.h"
+#include "../defines.h"
 #include "player.h"
+#include "../globals.h"
+#include "tile_map.h"
 
 bool camera_create(Camera *camera, SDL_Renderer *renderer)
 {
@@ -24,18 +26,18 @@ void camera_destroy(Camera *camera)
     pa_destroy(&camera->arrow);
 }
 
-void camera_move_on(Camera *camera, float dx, float dy)
+void camera_move_on(Camera *camera, float dx, float dy, TileMap *map)
 {
     ObjectGeometry new_geom = {camera->geometry.x + dx,
                                camera->geometry.y,
                                camera->geometry.width,
                                camera->geometry.height};
-    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
+    if (geometry_rect_rect_collision_check(new_geom, true, map->geometry)) {
         camera->geometry.x += dx;
     }
     new_geom.x -= dx;
     new_geom.y += dy;
-    if (geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
+    if (geometry_rect_rect_collision_check(new_geom, true, map->geometry)) {
         camera->geometry.y += dy;
     }
 }
@@ -59,7 +61,7 @@ Vector2f camera_track_shift(Camera *camera, Player *player)
     return shift;
 }
 
-void camera_move_after_the_player(Camera *camera, Player *player)
+void camera_move_after_the_player(Camera *camera, TileMap *map, Player *player)
 {
     Vector2f shift = camera_track_shift(camera, player);
     if (camera_need_move_x(shift.x)) {
@@ -68,26 +70,19 @@ void camera_move_after_the_player(Camera *camera, Player *player)
     if (camera_need_move_y(shift.y)) {
         shift.y > 0 ? (shift.y -= CAMERA_TRACK_DELAY_Y) : (shift.y += CAMERA_TRACK_DELAY_Y);
     }
-    camera_move_on(camera, shift.x, shift.y);
+    camera_move_on(camera, shift.x, shift.y, map);
 }
 
-static int signum(double a)
-{
-    return a > 0.001 ? 1 : (a < -0.001 ? -1 : 0);
-}
-
-void camera_move_after_the_mouse(Camera *camera, Player *player)
+void camera_move_after_the_mouse(Camera *camera, TileMap *map, Player *player)
 {
     Vector2i mouse_pos;
     SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
 
-    double s = sin(deg_to_rad(player->angle));
-    double c = cos(deg_to_rad(player->angle));
     Vector2f player_rel_pos = player_get_relative_position(player, camera);
 
     Vector2f d_pos = { (mouse_pos.x + player_rel_pos.x - camera->geometry.width ) / 2.f,
                        (mouse_pos.y + player_rel_pos.y - camera->geometry.height) / 2.f};
-    camera_move_on(camera, d_pos.x, d_pos.y);
+    camera_move_on(camera, d_pos.x, d_pos.y, map);
 }
 
 void camera_render_pointing_arrow(Camera *camera, SDL_Renderer *renderer, Vector2f point_from, Vector2f point_to)

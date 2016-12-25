@@ -11,12 +11,13 @@
 #include "camera.h"
 #include "player.h"
 #include "tile_map.h"
+#include "../globals.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
 #endif
 
-void bullet_move(Bullet *bullet, unsigned delta_ticks, Player players[PLAYER_COUNT]);
+void bullet_move(Bullet *bullet, unsigned delta_ticks, TileMap *map, Player players[PLAYER_COUNT]);
 
 bool bullets_create(Bullets *bullets, SDL_Renderer *renderer)
 {
@@ -60,7 +61,7 @@ static bool bullet_need_disactivate(Bullet *bullet) {
 static bool bullet_is_active(Bullet *bullet) {
     return bullet->ttl > 0;
 }
-void bullets_move_all(Bullets *bullets, unsigned delta_ticks, Player players[PLAYER_COUNT])
+void bullets_move_all(Bullets *bullets, unsigned delta_ticks, TileMap *map, Player players[PLAYER_COUNT])
 {
     for (int i = 0; i < bullets->number; ++i) {
         Bullet *bullet = bullets->bullets + i;
@@ -71,12 +72,12 @@ void bullets_move_all(Bullets *bullets, unsigned delta_ticks, Player players[PLA
         }
         if (bullet_is_active(bullet))
         {
-            bullet_move(bullet, delta_ticks, players);
+            bullet_move(bullet, delta_ticks, map, players);
         }
     }
 }
 
-static void bullet_reflect(Bullet *bullet)
+static void bullet_reflect(Bullet *bullet, TileMap *map)
 {
     double x = bullet->geometry.x;
     double y = bullet->geometry.y;
@@ -84,20 +85,20 @@ static void bullet_reflect(Bullet *bullet)
     double h = bullet->geometry.height;
 
     bool x_reflect = false, y_reflect = false;
-    if (x < GlobalVariables.map_geometry.x) {
-        bullet->geometry.x = 2 * GlobalVariables.map_geometry.x - bullet->geometry.x;
+    if (x < map->geometry.x) {
+        bullet->geometry.x = 2 * map->geometry.x - bullet->geometry.x;
         y_reflect = true;
     }
-    if (y < GlobalVariables.map_geometry.y) {
-        bullet->geometry.y = 2 * GlobalVariables.map_geometry.y - bullet->geometry.y;
+    if (y < map->geometry.y) {
+        bullet->geometry.y = 2 * map->geometry.y - bullet->geometry.y;
         x_reflect = true;
     }
-    if (x + w > GlobalVariables.map_geometry.x + GlobalVariables.map_geometry.width) {
-        bullet->geometry.x -= 2 * (x + w - GlobalVariables.map_geometry.x - GlobalVariables.map_geometry.width);
+    if (x + w > map->geometry.x + map->geometry.width) {
+        bullet->geometry.x -= 2 * (x + w - map->geometry.x - map->geometry.width);
         y_reflect = true;
     }
-    if (y + h > GlobalVariables.map_geometry.y + GlobalVariables.map_geometry.height) {
-        bullet->geometry.y -= 2 * (y + h - GlobalVariables.map_geometry.y - GlobalVariables.map_geometry.height);
+    if (y + h > map->geometry.y + map->geometry.height) {
+        bullet->geometry.y -= 2 * (y + h - map->geometry.y - map->geometry.height);
         x_reflect = true;
     }
 
@@ -109,7 +110,7 @@ static void bullet_reflect(Bullet *bullet)
     }
 }
 
-void bullet_collision(Bullet *bullet, Player players[PLAYER_COUNT])
+void bullet_collision(Bullet *bullet, TileMap *map, Player players[PLAYER_COUNT])
 {
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (players[i].is_alive && !geometry_rect_rect_collision_check(bullet->geometry, false, players[i].geometry)) {
@@ -117,20 +118,20 @@ void bullet_collision(Bullet *bullet, Player players[PLAYER_COUNT])
             bullet->ttl = 0;
         }
     }
-    if (!tilemap_collision_check(bullet->geometry)) {
+    if (!tilemap_collision_check(map, bullet->geometry)) {
         bullet->ttl = 0;
     }
 }
 
-void bullet_move(Bullet *bullet, unsigned delta_ticks, Player players[PLAYER_COUNT])
+void bullet_move(Bullet *bullet, unsigned delta_ticks, TileMap *map, Player players[PLAYER_COUNT])
 {
     float shift = (float) delta_ticks / 1000 * BULLET_VELOCITY;
     bullet->geometry.x += shift * sin(deg_to_rad(bullet->angle));
     bullet->geometry.y -= shift * cos(deg_to_rad(bullet->angle));
     bullet->ttl -= shift;
 
-    bullet_collision(bullet, players);
-    bullet_reflect(bullet);
+    bullet_collision(bullet, map, players);
+    bullet_reflect(bullet, map);
 }
 
 void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer, Camera *camera)

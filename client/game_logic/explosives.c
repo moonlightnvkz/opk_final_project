@@ -10,8 +10,9 @@
 #include "tile_map.h"
 #include "../server_logic/request_response.h"
 #include "player.h"
+#include "../globals.h"
 
-void explosions_disable_explosive(Explosives *explosives, Explosive *explosive);
+void explosions_disable_explosive(Explosives *explosives, Explosive *explosive, TileMap *map);
 
 bool explosives_create(Explosives *explosives, SDL_Renderer *renderer)
 {
@@ -83,7 +84,7 @@ void explosive_on_damage(Explosive *explosive)
     explosive->timer_damaged = EXPLOSIVE_DAMAGED_ANIMATION_TIME;
 }
 
-void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, Player *players)
+void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, TileMap *map, Player *players)
 {
     for (unsigned i = 0; i < explosives->number; ++i) {
         Explosive *explosive = &explosives->explosives[i];
@@ -93,7 +94,7 @@ void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, Pl
         }
         // Animation is over, need to remove it from the map
         if (explosive->is_exploding && explosive->timer_explosion == 0) {
-            explosions_disable_explosive(explosives, explosive);
+            explosions_disable_explosive(explosives, explosive, map);
         }
         // Explosion case
         if (explosive->timer_damaged == 0 && !explosive->is_exploding) {
@@ -102,7 +103,7 @@ void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, Pl
             }
             for (unsigned k = 0; k < PLAYER_COUNT; ++k) {
                 unsigned x1, x2, y1, y2;
-                tilemap_coords_to_tiles(players[k].geometry, &x1, &x2, &y1, &y2);
+                tilemap_coords_to_tiles(map, players[k].geometry, &x1, &x2, &y1, &y2);
                 ObjectGeometry rect1 = {x1, y1, x2 - x1, y2 - y1};
                 ObjectGeometry rect2 = {explosive->position_at_map.x - 1, explosive->position_at_map.y - 1, 2, 2};
                 if (!geometry_rect_rect_collision_check(rect1, false, rect2)) {
@@ -140,11 +141,11 @@ void explosives_swap(Explosive *e1, Explosive *e2)
     memcpy(e2, &temp, sizeof(Explosive));
 }
 
-void explosions_disable_explosive(Explosives *explosives, Explosive *explosive)
+void explosions_disable_explosive(Explosives *explosives, Explosive *explosive, TileMap *map)
 {
     for (unsigned i = 0; i < explosives->number; ++i) {
         if (&explosives->explosives[i] == explosive) {
-            GlobalVariables.map->map_descr.map_descr[explosive->position_at_map.y][explosive->position_at_map.x] = TM_FLOOR;
+            map->map_descr.map_descr[explosive->position_at_map.y][explosive->position_at_map.x] = TM_FLOOR;
             explosives->number--;
             explosives_swap(explosives->explosives + i, explosives->explosives + explosives->number);
         }
@@ -177,16 +178,16 @@ Explosive *explosives_get_explosive_on(Explosives *explosives, int w, int h)
     return NULL;
 }
 
-void explosives_render_exposive(Explosive *explosive, SDL_Renderer *renderer, Camera *camera)
+void explosives_render_exposive(Explosive *explosive, SDL_Renderer *renderer, Camera *camera, TileMap *map)
 {
     if (explosive == NULL) {
         return;
     }
-        int x = explosive->position_at_map.x * GlobalVariables.tile_size.x - (int) camera->geometry.x;
-        int y = explosive->position_at_map.y * GlobalVariables.tile_size.y - (int) camera->geometry.y;
-        render_texture(explosive->current_sprite, renderer, x, y,
-                       (int) explosive->size.x,
-                       (int) explosive->size.y);
+    int x = explosive->position_at_map.x * map->tile_size.x - (int) camera->geometry.x;
+    int y = explosive->position_at_map.y * map->tile_size.y - (int) camera->geometry.y;
+    render_texture(explosive->current_sprite, renderer, x, y,
+                   (int) explosive->size.x,
+                   (int) explosive->size.y);
 }
 
 void explosives_apply_response(Explosives *explosives, ExplosivesStateResponse *state)

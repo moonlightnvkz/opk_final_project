@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "pointing_arrow.h"
 #include "sdl_helpers.h"
-#include "../default_values.h"
+#include "../defines.h"
 #include "../loggers.h"
 #include "player.h"
 #include "camera.h"

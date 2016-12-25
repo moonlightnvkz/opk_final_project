@@ -6,13 +6,15 @@
 #include <sys/socket.h>
 #include <unistd.h>    //write
 #include <assert.h>
-#include "../default_values.h"
+#include "../defines.h"
 #include "socket_controller.h"
 #include "../loggers.h"
 #include "../game_logic/model_controller.h"
 #include <signal.h>
 
 static void sc_clear_response(ResponseStructure *res);
+
+static bool read_ip(const char *file, char *ip, uint16_t *port);
 
 bool sc_init(SocketController *sc)
 {
@@ -23,9 +25,16 @@ bool sc_init(SocketController *sc)
         LOG_ERROR("Failed to create socket");
         return false;
     }
+
+    // "xxx.xxx.xxx.xxx\0"
+    char ip[16] = {0};
+    uint16_t port = 0;
+    if (!read_ip(SERVER_CONF_FILE, ip, &port)) {
+        return false;
+    }
     sc->server.sin_family = AF_INET;
-    sc->server.sin_addr.s_addr = inet_addr(SERVER_IP);
-    sc->server.sin_port = htons(SERVER_PORT);
+    sc->server.sin_addr.s_addr = inet_addr(ip);
+    sc->server.sin_port = htons(port);
 
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         sc->request_numbers[i] = 0;
@@ -40,8 +49,57 @@ bool sc_init(SocketController *sc)
 
     signal(SIGPIPE, SIG_IGN);
 
-    LOG_ERROR("Server listen at %d:%d", INADDR_ANY, SERVER_PORT);
+    LOG_ERROR("Server listen at %s:%d", ip, port);
     return true;
+}
+
+static bool read_ip(const char *file, char *ip, uint16_t *port)
+{
+    FILE *conf = fopen(file, "r");
+    if (!conf) {
+        LOG_ERROR("Failed to open server conf file");
+        return false;
+    }
+    int ip_part = 0;
+    int offset = 0;
+
+    bool error = false;
+
+    for (unsigned i = 0; i < 4; ++i) {
+        if (fscanf(conf, "%d%*c", &ip_part) != 1) {
+            LOG_ERROR("Wrong ip format");
+            error = true;
+            break;
+        }
+        if (ip_part > 255 || ip_part < 0) {
+            LOG_ERROR("Wrong ip format:%d octet", i);
+            error = true;
+            break;
+        }
+        sprintf(ip + offset, "%d", ip_part);
+        if (ip_part < 10) {
+            offset += 1;
+        } else if (ip_part < 100) {
+            offset += 2;
+        } else {
+            offset +=3;
+        }
+        if (i != 3) {
+            sprintf(ip + offset, ".");
+            offset++;
+        }
+    }
+
+    if (!error && fscanf(conf, "%hu", port) != 1) {
+        LOG_ERROR("Wrong port format");
+        error = true;
+    }
+    if (!error && port < 0) {
+        LOG_ERROR("Port can't be negative");
+        error = true;
+    }
+    fclose(conf);
+    return !error;
 }
 
 void sc_destroy(SocketController *sc)

@@ -7,11 +7,12 @@
 #include <stdlib.h>
 #include <SDL_system.h>
 #include "geometry.h"
-#include "../default_values.h"
+#include "../defines.h"
 
 typedef struct tBulletsStateResponse BulletsStateResponse;
 typedef struct tCamera Camera;
 typedef struct tPlayer Player;
+typedef struct tTileMap TileMap;
 
 typedef struct tBullet {
     ObjectGeometry geometry;
@@ -29,7 +30,7 @@ bool bullets_create(Bullets *bullets, SDL_Renderer *renderer);
 
 void bullets_destroy(Bullets *bullets);
 
-void bullets_move_all(Bullets *bullets, unsigned delta_ticks, Player *players);
+void bullets_move_all(Bullets *bullets, unsigned delta_ticks, TileMap *map, Player *players);
 
 void bullets_render_all(Bullets *bullets, SDL_Renderer *renderer, Camera *camera);
 

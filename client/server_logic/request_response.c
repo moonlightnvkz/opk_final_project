@@ -7,6 +7,7 @@
 #include "../game_logic/player.h"
 #include "../loggers.h"
 #include "../game_logic/mvc.h"
+#include "../globals.h"
 
 void request_set_player_states(RequestStructure *request, Player *player)
 {
@@ -25,7 +26,7 @@ RequestStructure *request_create(MVC *mvc, unsigned number)
         return NULL;
     }
 
-    Player *player = &mvc->players[GlobalVariables.number_of_player];
+    Player *player = &mvc->players[GlobalVariables.number_of_the_player];
 
     request->req_number = number;
     request_set_player_states(request, player);

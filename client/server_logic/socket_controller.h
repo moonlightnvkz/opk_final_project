@@ -17,7 +17,8 @@ typedef enum eScReturnCodes {
     SC_CONNECTION_FAILED,
     SC_START_SIGNAL_MATHCHING_ERROR,
     SC_SOCKET_CREATION_ERROR,
-    SC_PARTIAL_RECEIVE
+    SC_PARTIAL_RECEIVE,
+    SC_READ_IP_FAILED
 } ScReturnCodes;
 
 typedef struct tSocketController {

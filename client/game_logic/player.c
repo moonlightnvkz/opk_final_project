@@ -14,6 +14,7 @@
 #include "../my_deque.h"
 #include "camera.h"
 #include "tile_map.h"
+#include "../globals.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846	/* pi */
@@ -23,7 +24,7 @@
 #define M_SQRT2	1.41421356237309504880	/* sqrt(2) */
 #endif
 
-static void player_move_on(Player *player, float dx, float dy);
+static void player_move_on(Player *player, float dx, float dy, TileMap *map);
 
 static void player_move_to(Player *player, float x, float y);
 
@@ -31,7 +32,7 @@ bool player_create(Player *player, SDL_Renderer *renderer)
 {
     assert(player != NULL);
 
-    GlobalVariables.number_of_player = 0;
+    GlobalVariables.number_of_the_player = 0;
     player->is_alive = true;
     player->geometry.x = PLAYER_START_X;
     player->geometry.y = PLAYER_START_Y;
@@ -59,14 +60,14 @@ void player_destroy(Player *player)
     SDL_DestroyTexture(player->texture);
 }
 
-void player_move(Player *player, unsigned delta_ticks)
+void player_move(Player *player, unsigned delta_ticks, TileMap *map)
 {
     if (!player->is_alive) {
         return;
     }
     float dx = (float) delta_ticks / 1000 * player->velocity.x;
     float dy = (float) delta_ticks / 1000 * player->velocity.y;
-    player_move_on(player, dx, dy);
+    player_move_on(player, dx, dy, map);
 }
 
 static void player_move_to(Player *player, float x, float y)
@@ -75,27 +76,27 @@ static void player_move_to(Player *player, float x, float y)
     player->geometry.y = y;
 }
 
-static bool player_collision_check(Player *player, float dx, float dy)
+static bool player_collision_check(Player *player, float dx, float dy, TileMap *map)
 {
     ObjectGeometry new_geom = {player->geometry.x + dx,
                                player->geometry.y + dy,
                                player->geometry.width,
                                player->geometry.height};
-    if (!geometry_rect_rect_collision_check(new_geom, true, GlobalVariables.map_geometry)) {
+    if (!geometry_rect_rect_collision_check(new_geom, true, map->geometry)) {
         return false;
     }
-    if (!tilemap_collision_check(new_geom)) {
+    if (!tilemap_collision_check(map, new_geom)) {
         return false;
     }
     return true;
 }
 
-static void player_move_on(Player *player, float dx, float dy)
+static void player_move_on(Player *player, float dx, float dy, TileMap *map)
 {
-    if (player_collision_check(player, dx, 0)) {
+    if (player_collision_check(player, dx, 0, map)) {
         player->geometry.x += dx;
     }
-    if (player_collision_check(player, 0, dy)) {
+    if (player_collision_check(player, 0, dy, map)) {
         player->geometry.y += dy;
     }
 }
@@ -194,7 +195,7 @@ void player_kill(Player *player)
     player->is_alive = false;
 }
 
-void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response) {
+void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response, TileMap *map) {
     // Remove all requests with number < response->number
     while (((RequestStructure *) deque_peek_first(requests_list)) != NULL &&
            ((RequestStructure *) deque_peek_first(requests_list))->req_number < response->res_number) {
@@ -207,12 +208,12 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
     }
 
     // Save the last shift (server doesn't know about it) and move player to the point in response.
-    Vector2f shift_after_last_request = {player->geometry.x - response->players[GlobalVariables.number_of_player].position.x,
-                                         player->geometry.y - response->players[GlobalVariables.number_of_player].position.y};
+    Vector2f shift_after_last_request = {player->geometry.x - response->players[GlobalVariables.number_of_the_player].position.x,
+                                         player->geometry.y - response->players[GlobalVariables.number_of_the_player].position.y};
     player_move_to(player,
-                   response->players[GlobalVariables.number_of_player].position.x,
-                   response->players[GlobalVariables.number_of_player].position.y);
-    player->is_alive = response->players[GlobalVariables.number_of_player].is_alive;
+                   response->players[GlobalVariables.number_of_the_player].position.x,
+                   response->players[GlobalVariables.number_of_the_player].position.y);
+    player->is_alive = response->players[GlobalVariables.number_of_the_player].is_alive;
 
     // This request should be deleted, so there is special processing
     RequestStructure *request = (RequestStructure *) deque_remove_first(requests_list);
@@ -225,7 +226,8 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
                        ((RequestStructure *) deque_peek_first(requests_list))->player_state.position.x -
                        request->player_state.position.x,
                        ((RequestStructure *) deque_peek_first(requests_list))->player_state.position.y -
-                       request->player_state.position.y);
+                       request->player_state.position.y,
+                       map);
         request_destroy(request);
     }
 
@@ -241,15 +243,16 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
                        ((RequestStructure *) deque_iterator_get_data(&it))->player_state.position.x -
                        prev->player_state.position.x,
                        ((RequestStructure *) deque_iterator_get_data(&it))->player_state.position.y -
-                       prev->player_state.position.y);
+                       prev->player_state.position.y,
+                       map);
     }
     deque_iterator_destroy(&it);
-    player_move_on(player, shift_after_last_request.x, shift_after_last_request.y);
+    player_move_on(player, shift_after_last_request.x, shift_after_last_request.y, map);
 }
 
 void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response) {
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
-        if (i == GlobalVariables.number_of_player) {
+        if (i == GlobalVariables.number_of_the_player) {
             continue;
         }
         PlayerStateResponse *res = &response->players[i];

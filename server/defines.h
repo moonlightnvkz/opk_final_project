@@ -4,11 +4,6 @@
 
 #pragma once
 
-#include "game_logic/geometry.h"
-
-typedef struct tMapDescription MapDescription;
-typedef struct tTileMap TileMap;
-
 #define MAP_WIDTH                               1024    // must be a multiple of TILE_WIDTH
 #define MAP_HEIGHT                              1024    // must be a multiple of TILE_HEIGHT
 #define MAP_LOAD_FILE                           "res/map/tilemap"
@@ -37,19 +32,8 @@ typedef struct tTileMap TileMap;
 #define BULLET_HIEGHT                           20
 #define BULLET_TTL                              400
 
-#define SERVER_IP                               "192.168.1.34"
-#define SERVER_PORT                             8888
 #define SERVER_TICKRATE                         20
 #define SERVER_START_SIGNAL                     'S'
+#define SERVER_CONF_FILE                        "conf/server"
 
-#define PLAYERS_ALIVE_TO_END_THE_GAME           0
-
-
-struct tGlobalVariables {
-    ObjectGeometry map_geometry;
-    Vector2i tile_size;
-    TileMap *map;
-    MapDescription *map_descr;
-} GlobalVariables;
-
-void globals_init();
+#define GAME_CONF_FILE                          "conf/game"

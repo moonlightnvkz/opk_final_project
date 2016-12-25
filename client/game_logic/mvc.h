@@ -7,7 +7,7 @@
 #include <SDL_render.h>
 #include <stdbool.h>
 #include "../my_deque.h"
-#include "../default_values.h"
+#include "../defines.h"
 #include "camera.h"
 #include "tile_map.h"
 #include "player.h"
