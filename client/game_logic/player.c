@@ -48,7 +48,7 @@ bool player_create(Player *player, SDL_Renderer *renderer)
         player->texture = load_texture(MISSING_TEXTURE, renderer);
         if (player->texture == NULL) {
             LOG_ERROR("Failed to load <missing_texture>");
-            return NULL;
+            return false;
         }
     }
 
@@ -287,7 +287,7 @@ void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructur
         players[i].geometry.x = res->position.x;
         players[i].geometry.y = res->position.y;
         // Applying shifts occurred between polls
-        //player_move_on(&players[i], delta.x, delta.y, map);
+        player_move_on(&players[i], delta.x, delta.y, map);
         // Update players position
         players_positions[i].x = players[i].geometry.x;
         players_positions[i].y = players[i].geometry.y;

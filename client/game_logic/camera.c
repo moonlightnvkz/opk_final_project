@@ -3,6 +3,7 @@
 //
 
 #include <SDL_mouse.h>
+#include <math.h>   //fabs
 #include "camera.h"
 #include "../defines.h"
 #include "player.h"
@@ -12,7 +13,7 @@
 bool camera_create(Camera *camera, SDL_Renderer *renderer)
 {
     if (!pa_create(&camera->arrow, renderer)) {
-        return NULL;
+        return false;
     }
     camera->geometry.x = CAMERA_START_X;
     camera->geometry.y = CAMERA_START_Y;

@@ -170,7 +170,7 @@ int sc_receive_request(SocketController *sc, unsigned number_of_player)
         return SC_CONNECTION_CLOSED;
     }
     else if(read_size == -1) {
-        LOG_ERROR("Receive failed");
+        //LOG_ERROR("Receive failed");
         return SC_RECEIVE_FAILED;
     }
     sc->request_numbers[number_of_player] = sc->request.req_number;
@@ -195,6 +195,16 @@ int sc_send_response(SocketController *sc, unsigned number_of_player)
         return SC_UNSUPPORTED_PLAYER;
     }
     sc->response.res_number = sc->request_numbers[number_of_player];
+
+    // If quit, wait for all responses. Sometimes with MSG_DONTWAIT clients doesn't receive response.
+//    bool flags;
+//    if (sc->response.quit) {
+//        flags = MSG_CONFIRM;
+//    } else {
+//        flags = MSG_DONTWAIT;
+//    }
+//    flags |= MSG_NOSIGNAL;
+
     if(send(sc->player_sockets[number_of_player], &sc->response, sizeof(ResponseStructure), MSG_DONTWAIT | MSG_NOSIGNAL) < sizeof(ResponseStructure))
     {
         LOG_ERROR("Send failed (player %d)", number_of_player);

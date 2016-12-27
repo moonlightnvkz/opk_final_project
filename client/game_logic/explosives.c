@@ -3,6 +3,7 @@
 //
 
 #include <assert.h>
+#include <string.h> //memcpy
 #include "explosives.h"
 #include "sdl_helpers.h"
 #include "../loggers.h"

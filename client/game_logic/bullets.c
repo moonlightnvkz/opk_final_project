@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <string.h> //memcpy
 #include "bullets.h"
 #include "../loggers.h"
 #include "sdl_helpers.h"
@@ -36,7 +37,7 @@ bool bullets_create(Bullets *bullets, SDL_Renderer *renderer)
         bullets->texture = load_texture(MISSING_TEXTURE, renderer);
         if (bullets->texture == NULL) {
             LOG_ACTION(Failed to load <missing_texture>);
-            return NULL;
+            return false;
         }
     }
     return true;

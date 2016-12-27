@@ -186,7 +186,7 @@ int sc_receive_current_state(SocketController *sc) {
     static ssize_t left_to_receive = sizeof(ResponseStructure);
     ssize_t res = recv(sc->sock, &sc->last_response, sizeof(ResponseStructure), MSG_DONTWAIT);
     if (res == -1) {
-        LOG_ERROR("Receive failed");
+        //LOG_ERROR("Receive failed");
         return SC_RECEIVE_FAILED;
     }
     if (res == 0) {

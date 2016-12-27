@@ -3,12 +3,13 @@
 //
 #include <SDL2/SDL_image.h>
 #include "sdl_helpers.h"
+#include "../loggers.h"
 
 SDL_Texture *load_texture(const char* file, SDL_Renderer *renderer)
 {
     SDL_Texture *t = IMG_LoadTexture(renderer, file);
     if (t == NULL) {
-        fprintf(stderr, "SDL_CreateTextureFromSurface error: %s", SDL_GetError());
+        LOG_ERROR("SDL_CreateTextureFromSurface error: %s", SDL_GetError());
         return NULL;
     }
     return t;

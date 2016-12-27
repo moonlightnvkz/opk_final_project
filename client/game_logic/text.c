@@ -39,6 +39,7 @@ bool text_render_text(Text *text, char *message, SDL_Renderer *renderer, Uint8 r
     int w, h;
     SDL_QueryTexture(text->last_text, NULL, NULL, &w, &h);
     render_texture(text->last_text, renderer, (WINDOW_WIDTH - w) / 2, (WINDOW_HEIGHT - h) / 2, w, h);
+    return true;
 }
 
 void text_free_last_text(Text *text)
