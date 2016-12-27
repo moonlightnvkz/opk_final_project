@@ -16,6 +16,7 @@ bool text_create(Text *text)
         LOG_ERROR(SDL_GetError());
         return false;
     }
+    text->last_text = NULL;
     return true;
 }
 

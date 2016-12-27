@@ -21,7 +21,7 @@ void response_set_player_states(PlayerStateResponse *state, Player *player)
 void response_set_bullets_states(BulletsStateResponse *state, Bullets *bullets)
 {
     state->number = bullets->number;
-    for (unsigned i = 0; i < bullets->number; ++i) {
+    for (unsigned i = 0; i < BULLET_MAX_AMOUNT; ++i) {
         BulletStateResponse *bulletStateResponse = &state->bullets[i];
         Bullet *bullet = &bullets->bullets[i];
         bulletStateResponse->ttl = bullet->ttl;
@@ -34,7 +34,7 @@ void response_set_bullets_states(BulletsStateResponse *state, Bullets *bullets)
 void response_set_explosives_state(ExplosivesStateResponse *state, Explosives *explosives)
 {
     state->number = explosives->number;
-    for (unsigned i = 0; i < explosives->number; ++i) {
+    for (unsigned i = 0; i < EXPLOSIVE_MAX_AMOUNT; ++i) {
         Explosive *explosive = &explosives->explosives[i];
         ExplosiveStateResponse *exp_state = &state->explosives[i];
         exp_state->is_damaged = explosive->is_damaged;

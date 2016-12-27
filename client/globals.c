@@ -6,8 +6,9 @@
 #include "defines.h"
 #include "game_logic/tile_map.h"
 
-void globals_init()
+bool globals_init()
 {
     GlobalVariables.quit = false;
     GlobalVariables.number_of_the_player = 0;
+    return true;
 }

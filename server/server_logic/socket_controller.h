@@ -19,7 +19,7 @@ typedef enum eScErrors {
 } ScErrors;
 
 typedef struct tSocketController {
-    int socket_desc;
+    int server_socket;
     int player_sockets[PLAYER_COUNT];
     struct sockaddr_in server;
     unsigned request_numbers[PLAYER_COUNT]; // numbers of request for each player

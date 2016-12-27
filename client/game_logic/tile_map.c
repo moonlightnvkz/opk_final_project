@@ -103,7 +103,7 @@ bool tilemap_collision_check(TileMap *map, ObjectGeometry geom)
                 return false;
             }
             if (map_descr->map_descr[j][i] == TM_EXPLOSIVE) {
-                explosive_on_damage(explosives_get_explosive_on(&map->explosives, i, j));
+                explosive_on_damage(explosives_get_explosive_at(&map->explosives, i, j));
                 return false;
             }
         }
@@ -154,7 +154,7 @@ void tilemap_render(TileMap *map, SDL_Renderer *renderer, Camera *camera) {
             }
 
             if (tile_type == TM_EXPLOSIVE) {
-                explosives_render_exposive(explosives_get_explosive_on(&map->explosives, tw, th), renderer, camera, map);
+                explosives_render_exposive(explosives_get_explosive_at(&map->explosives, tw, th), renderer, camera, map);
             } else {
                 render_texture(map->tiles[tile_type].texture, renderer, w, h, map->tile_size.x, map->tile_size.y);
             }

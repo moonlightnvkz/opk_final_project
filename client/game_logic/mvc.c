@@ -172,9 +172,9 @@ void mvc_apply_response(MVC *mvc, Deque *requests_list, ResponseStructure *last_
         return;
     }
     player_apply_response_this(mvc->players + GlobalVariables.number_of_the_player, requests_list, last_response, &mvc->map);
-    player_apply_response_others(mvc->players, last_response);
+    player_apply_response_others(mvc->players, last_response, &mvc->map);
 
     bullets_apply_response(&mvc->bullets, &last_response->bullets);
 
-    explosives_apply_response(&mvc->map.explosives, &last_response->explosives);
+    explosives_apply_response(&mvc->map.explosives, &last_response->explosives, &mvc->map);
 }

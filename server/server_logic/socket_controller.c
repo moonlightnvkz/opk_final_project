@@ -20,8 +20,8 @@ bool sc_init(SocketController *sc)
 {
     assert(sc != NULL);
 
-    sc->socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-    if (sc->socket_desc == -1) {
+    sc->server_socket = socket(AF_INET , SOCK_STREAM , 0);
+    if (sc->server_socket == -1) {
         LOG_ERROR("Failed to create socket");
         return false;
     }
@@ -39,13 +39,13 @@ bool sc_init(SocketController *sc)
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         sc->request_numbers[i] = 0;
     }
-    if (bind(sc->socket_desc, (struct sockaddr *) &sc->server, sizeof(sc->server)) < 0) {
+    if (bind(sc->server_socket, (struct sockaddr *) &sc->server, sizeof(sc->server)) < 0) {
         LOG_ERROR("Failed to bind");
         return false;
     }
 
     sc_clear_response(&sc->response);
-    listen(sc->socket_desc , 3);
+    listen(sc->server_socket , 3);
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -108,7 +108,7 @@ void sc_destroy(SocketController *sc)
         shutdown(sc->player_sockets[i], 2);
         close(sc->player_sockets[i]);
     }
-    close(sc->socket_desc);
+    close(sc->server_socket);
 }
 
 static void sc_clear_response(ResponseStructure *res)
@@ -133,8 +133,8 @@ static void sc_clear_response(ResponseStructure *res)
         PlayerStateResponse *p = &res->players[i];
         p->angle = 0;
         p->is_alive = true;
-        p->position.x = PLAYER_X;
-        p->position.y = PLAYER_Y;
+        p->position.x = PLAYER_START_X;
+        p->position.y = PLAYER_START_Y;
         p->velocity.x = p->velocity.y = 0;
     }
 }
@@ -148,7 +148,7 @@ int sc_accept_player(SocketController *sc, unsigned number_of_player)
     }
     LOG_ACTION("Waiting for incoming connection: player %d", number_of_player);
 
-    sc->player_sockets[number_of_player] = accept(sc->socket_desc, NULL, NULL);
+    sc->player_sockets[number_of_player] = accept(sc->server_socket, NULL, NULL);
     if (sc->player_sockets[number_of_player] < 0) {
         LOG_ERROR("Failed to accept player connection");
         return SC_CONNECTION_FAILED;

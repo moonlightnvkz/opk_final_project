@@ -9,26 +9,25 @@
 int main(int argc , char *argv[])
 {
     if (!logger_init()) {
-        LOG_ERROR("Failed to initialize logger");
         return 1;
     }
     if (!globals_init()) {
         LOG_ERROR("Failed to initialize global variables");
         logger_destroy();
-        return 1;
+        return 2;
     }
     ModelController mc;
     if (!mc_init(&mc)) {
         LOG_ERROR("Failed to initialize model controller");
         logger_destroy();
-        return 1;
+        return 3;
     }
     SocketController sc;
     if (!sc_init(&sc)) {
         LOG_ERROR("Failed to initialize socket controller");
         mc_destroy(&mc);
         logger_destroy();
-        return 1;
+        return 4;
     }
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (sc_accept_player(&sc, i) != SC_NO_ERROR) {
@@ -52,7 +51,6 @@ int main(int argc , char *argv[])
     unsigned curr_ticks = 0, prev_ticks = 0;
     bool quit = false;
     int results_of_receive[PLAYER_COUNT] = {0};
-    unsigned time = 0;
     while(true) {
         for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
             results_of_receive[i] = sc_receive_request(&sc, i);
@@ -70,12 +68,9 @@ int main(int argc , char *argv[])
         response_log(&sc.response, "Response", __FUNCTION__, __LINE__);
 
         for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
-            if (results_of_receive[i] == SC_NO_ERROR || SDL_GetTicks() - time > 1000.0 / SERVER_TICKRATE) {
+            if (results_of_receive[i] == SC_NO_ERROR) {
                 sc_send_response(&sc, i);
             }
-        }
-        if (SDL_GetTicks() - time > 1000.0 / SERVER_TICKRATE) {
-            time = SDL_GetTicks();
         }
         if (quit) { // quit should be there because of sc_create_response(..., ..., quit);
             break;

@@ -15,4 +15,4 @@ struct tGlobalVariables {
     unsigned number_of_the_player;
 } GlobalVariables;
 
-void globals_init();
+bool globals_init();

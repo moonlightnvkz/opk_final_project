@@ -43,4 +43,4 @@ void player_kill(Player *player);
 
 void player_apply_response_this(Player *player, Deque *requests_list, ResponseStructure *response, TileMap *map);
 
-void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response);
+void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response, TileMap *map);

@@ -16,20 +16,26 @@
 
 int main(int argc , char *argv[])
 {
-    logger_init();
-    globals_init();
+    if (!logger_init()) {
+        return 1;
+    }
+    if(!globals_init()) {
+        LOG_ERROR("Failed to initialize global variables");
+        logger_destroy();
+        return 2;
+    }
     MVC mvc;
     if (!mvc_init(&mvc)) {
         LOG_ERROR("Failed to create mvc");
         logger_destroy();
-        return 1;
+        return 3;
     }
     SocketController socketController;
     if (!sc_init(&socketController)) {
         LOG_ERROR("Failed to create socket controller");
         mvc_destroy(&mvc);
         logger_destroy();
-        return 2;
+        return 4;
     }
 
     // render waiting text

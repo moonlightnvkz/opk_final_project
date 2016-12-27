@@ -37,7 +37,7 @@ void explosives_destroy(Explosives *explosives);
 
 void explosives_render_exposive(Explosive *explosive, SDL_Renderer *renderer, Camera *camera, TileMap *map);
 
-Explosive *explosives_get_explosive_on(Explosives *explosives, int w, int h);
+Explosive *explosives_get_explosive_at(Explosives *explosives, int w, int h);
 
 void explosive_on_damage(Explosive *explosive);
 
@@ -45,4 +45,4 @@ void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, Ti
 
 bool exposives_add_explosive(Explosives *explosives, int w, int h);
 
-void explosives_apply_response(Explosives *explosives, ExplosivesStateResponse *state);
+void explosives_apply_response(Explosives *explosives, ExplosivesStateResponse *state, TileMap *map);

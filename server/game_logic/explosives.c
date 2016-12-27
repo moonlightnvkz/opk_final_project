@@ -8,7 +8,7 @@
 #include "player.h"
 #include "../globals.h"
 
-void explosions_disable_explosive(Explosives *explosives, Explosive *explosive, TileMap *map);
+void explosive_disable_explosive(Explosives *explosives, unsigned w, unsigned h, TileMap *map);
 
 bool explosives_create(Explosives *explosives)
 {
@@ -49,7 +49,8 @@ void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, Ti
         }
         // Animation is over, need to remove it from the map
         if (explosive->is_exploding && explosive->timer_explosion == 0) {
-            explosions_disable_explosive(explosives, explosive, map);
+            explosive_disable_explosive(explosives, (unsigned)explosive->position_at_map.x, (unsigned)explosive->position_at_map.y, map);
+            continue;
         }
         // Explosion case
         if (explosive->timer_damaged == 0 && !explosive->is_exploding) {
@@ -88,13 +89,16 @@ void explosives_swap(Explosive *e1, Explosive *e2)
     memcpy(e2, &temp, sizeof(Explosive));
 }
 
-void explosions_disable_explosive(Explosives *explosives, Explosive *explosive, TileMap *map)
+void explosive_disable_explosive(Explosives *explosives, unsigned w, unsigned h, TileMap *map)
 {
-    for (unsigned i = 0; i < explosives->number; ++i) {
-        if (&explosives->explosives[i] == explosive) {
-            map->map_descr.map_descr[explosive->position_at_map.y][explosive->position_at_map.x] = TM_FLOOR;
-            explosives->number--;
-            explosives_swap(explosives->explosives + i, explosives->explosives + explosives->number);
+    for (unsigned i = 0; i < EXPLOSIVE_MAX_AMOUNT; ++i) {
+        if (explosives->explosives[i].position_at_map.x == w &&
+            explosives->explosives[i].position_at_map.y == h) {
+            map->map_descr.map_descr[h][w] = TM_FLOOR;
+            if (i < explosives->number) {
+                explosives->number--;
+                explosives_swap(explosives->explosives + i, explosives->explosives + explosives->number);
+            }
         }
     }
 }
@@ -117,7 +121,7 @@ bool exposives_add_explosive(Explosives *explosives, int w, int h)
 Explosive *explosives_get_explosive_on(Explosives *explosives, int w, int h)
 {
     for (unsigned i = 0; i < explosives->number; ++i) {
-        if (explosives->explosives[i].position_at_map.x == w || explosives->explosives[i].position_at_map.y == h) {
+        if (explosives->explosives[i].position_at_map.x == w && explosives->explosives[i].position_at_map.y == h) {
             return &explosives->explosives[i];
         }
     }

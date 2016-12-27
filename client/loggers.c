@@ -12,9 +12,9 @@ bool logger_init()
 {
     log_file = fopen("log.log", "w");
     if (!log_file) {
-        return true;
-    } else {
         return false;
+    } else {
+        return true;
     }
 }
 

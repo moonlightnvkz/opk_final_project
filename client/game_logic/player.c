@@ -65,8 +65,8 @@ void player_move(Player *player, unsigned delta_ticks, TileMap *map)
     if (!player->is_alive) {
         return;
     }
-    float dx = (float) delta_ticks / 1000 * player->velocity.x;
-    float dy = (float) delta_ticks / 1000 * player->velocity.y;
+    float dx = delta_ticks / 1000.f * player->velocity.x;
+    float dy = delta_ticks / 1000.f * player->velocity.y;
     player_move_on(player, dx, dy, map);
 }
 
@@ -175,7 +175,7 @@ bool player_do_shot(Player *player, Bullets *bullets)
         return false;
     }
     unsigned time = SDL_GetTicks();
-    if (time - player->last_shot_time < 1.f / PLAYER_FIRE_RATE * 1000) {
+    if (time - player->last_shot_time < 1000.f / PLAYER_FIRE_RATE) {
         return false;
     }
     Vector2f bullet_pos = {player->geometry.x + player->geometry.width  / 2.f +
@@ -210,6 +210,8 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
     // Save the last shift (server doesn't know about it) and move player to the point in response.
     Vector2f shift_after_last_request = {player->geometry.x - response->players[GlobalVariables.number_of_the_player].position.x,
                                          player->geometry.y - response->players[GlobalVariables.number_of_the_player].position.y};
+
+    // Move to position in response
     player_move_to(player,
                    response->players[GlobalVariables.number_of_the_player].position.x,
                    response->players[GlobalVariables.number_of_the_player].position.y);
@@ -218,17 +220,17 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
     // This request should be deleted, so there is special processing
     RequestStructure *request = (RequestStructure *) deque_remove_first(requests_list);
     // Request number is equal to response number, but there is nothing else to apply
-    if (deque_peek_first(requests_list) == NULL) {
-        request_destroy(request);
-        return;
-    } else {
+    if (deque_peek_first(requests_list) != NULL) {
         player_move_on(player,
                        ((RequestStructure *) deque_peek_first(requests_list))->player_state.position.x -
                        request->player_state.position.x,
                        ((RequestStructure *) deque_peek_first(requests_list))->player_state.position.y -
                        request->player_state.position.y,
                        map);
-        request_destroy(request);
+    }
+    request_destroy(request);
+    if (deque_peek_first(requests_list) == NULL) {
+        return;
     }
 
     // Apply shift from the requests server doesn't know about
@@ -250,7 +252,23 @@ void player_apply_response_this(Player *player, Deque *requests_list, ResponseSt
     player_move_on(player, shift_after_last_request.x, shift_after_last_request.y, map);
 }
 
-void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response) {
+void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructure *response, TileMap *map) {
+    // To reduce teleportations of the players,
+    // positions of each player should be saved before applying the response.
+    // Then deltas is calculated.
+    // And then applying the response: apply position, move_to(delta).
+
+    static Vector2f players_positions[PLAYER_COUNT] = {0};
+    static bool is_position_inited = false;
+
+    if (!is_position_inited) {
+        for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
+            players_positions[i].x = players[i].geometry.x;
+            players_positions[i].y = players[i].geometry.y;
+        }
+        is_position_inited = true;
+    }
+
     for (unsigned i = 0; i < PLAYER_COUNT; ++i) {
         if (i == GlobalVariables.number_of_the_player) {
             continue;
@@ -258,9 +276,20 @@ void player_apply_response_others(Player players[PLAYER_COUNT], ResponseStructur
         PlayerStateResponse *res = &response->players[i];
         players[i].angle = res->angle;
         players[i].is_alive = res->is_alive;
-        players[i].geometry.x = res->position.x;
-        players[i].geometry.y = res->position.y;
         players[i].velocity.x = res->velocity.x;
         players[i].velocity.y = res->velocity.y;
+
+        Vector2f delta = {0};
+        // Calculating delta
+        delta.x = players[i].geometry.x - players_positions[i].x;
+        delta.y = players[i].geometry.y - players_positions[i].y;
+        // Applying response
+        players[i].geometry.x = res->position.x;
+        players[i].geometry.y = res->position.y;
+        // Applying shifts occurred between polls
+        //player_move_on(&players[i], delta.x, delta.y, map);
+        // Update players position
+        players_positions[i].x = players[i].geometry.x;
+        players_positions[i].y = players[i].geometry.y;
     }
 }

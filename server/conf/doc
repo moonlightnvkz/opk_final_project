@@ -1,0 +1,11 @@
+
+
+Config manual.
+
+
+
+In file "game":
+<int> - number of players to end the game
+
+In file "server":
+<xxx.xxx.xxx.xxx:yyy> - ip and port of the server

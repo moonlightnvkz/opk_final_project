@@ -12,7 +12,7 @@
 #include "player.h"
 #include "../globals.h"
 
-void explosions_disable_explosive(Explosives *explosives, Explosive *explosive, TileMap *map);
+void explosive_disable_explosive(Explosives *explosives, unsigned w, unsigned h, TileMap *map);
 
 bool explosives_create(Explosives *explosives, SDL_Renderer *renderer)
 {
@@ -74,14 +74,15 @@ void explosives_destroy(Explosives *explosives)
 
 void explosive_on_damage(Explosive *explosive)
 {
-    if (explosive == NULL) {
-        return;
-    }
-    if (explosive->is_damaged) {
+    if (explosive == NULL || explosive->is_damaged || explosive->is_exploding) {
         return;
     }
     explosive->is_damaged = true;
     explosive->timer_damaged = EXPLOSIVE_DAMAGED_ANIMATION_TIME;
+}
+
+bool explosive_need_disable(Explosive *explosive) {
+    return explosive->is_exploding && explosive->timer_explosion == 0;
 }
 
 void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, TileMap *map, Player *players)
@@ -90,11 +91,13 @@ void explosives_explode_process(Explosives *explosives, unsigned delta_ticks, Ti
         Explosive *explosive = &explosives->explosives[i];
         // Case it's undamaged
         if (!explosive->is_damaged) {
+            explosive->current_sprite = explosives->texture_damaged[0];
             continue;
         }
         // Animation is over, need to remove it from the map
-        if (explosive->is_exploding && explosive->timer_explosion == 0) {
-            explosions_disable_explosive(explosives, explosive, map);
+        if (explosive_need_disable(explosive)) {
+            explosive_disable_explosive(explosives, (unsigned)explosive->position_at_map.x, (unsigned)explosive->position_at_map.y, map);
+            continue;
         }
         // Explosion case
         if (explosive->timer_damaged == 0 && !explosive->is_exploding) {
@@ -141,13 +144,16 @@ void explosives_swap(Explosive *e1, Explosive *e2)
     memcpy(e2, &temp, sizeof(Explosive));
 }
 
-void explosions_disable_explosive(Explosives *explosives, Explosive *explosive, TileMap *map)
+void explosive_disable_explosive(Explosives *explosives, unsigned w, unsigned h, TileMap *map)
 {
-    for (unsigned i = 0; i < explosives->number; ++i) {
-        if (&explosives->explosives[i] == explosive) {
-            map->map_descr.map_descr[explosive->position_at_map.y][explosive->position_at_map.x] = TM_FLOOR;
-            explosives->number--;
-            explosives_swap(explosives->explosives + i, explosives->explosives + explosives->number);
+    for (unsigned i = 0; i < EXPLOSIVE_MAX_AMOUNT; ++i) {
+        if (explosives->explosives[i].position_at_map.x == w &&
+                explosives->explosives[i].position_at_map.y == h) {
+            map->map_descr.map_descr[h][w] = TM_FLOOR;
+            if (i < explosives->number) {
+                explosives->number--;
+                explosives_swap(explosives->explosives + i, explosives->explosives + explosives->number);
+            }
         }
     }
 }
@@ -168,10 +174,10 @@ bool exposives_add_explosive(Explosives *explosives, int w, int h)
     return true;
 }
 
-Explosive *explosives_get_explosive_on(Explosives *explosives, int w, int h)
+Explosive *explosives_get_explosive_at(Explosives *explosives, int w, int h)
 {
     for (unsigned i = 0; i < explosives->number; ++i) {
-        if (explosives->explosives[i].position_at_map.x == w || explosives->explosives[i].position_at_map.y == h) {
+        if (explosives->explosives[i].position_at_map.x == w && explosives->explosives[i].position_at_map.y == h) {
             return &explosives->explosives[i];
         }
     }
@@ -190,7 +196,7 @@ void explosives_render_exposive(Explosive *explosive, SDL_Renderer *renderer, Ca
                    (int) explosive->size.y);
 }
 
-void explosives_apply_response(Explosives *explosives, ExplosivesStateResponse *state)
+void explosives_apply_response(Explosives *explosives, ExplosivesStateResponse *state, TileMap *map)
 {
     explosives->number = state->number;
     for (unsigned i = 0; i < EXPLOSIVE_MAX_AMOUNT; ++i) {
@@ -201,5 +207,8 @@ void explosives_apply_response(Explosives *explosives, ExplosivesStateResponse *
         explosive->is_exploding = state->explosives[i].is_exploding;
         explosive->timer_damaged = state->explosives[i].timer_damaged;
         explosive->timer_explosion = state->explosives[i].timer_explosion;
+        if (explosive_need_disable(explosive)) {
+            explosive_disable_explosive(explosives, (unsigned)explosive->position_at_map.x, (unsigned)explosive->position_at_map.y, map);
+        }
     }
 }

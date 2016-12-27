@@ -23,8 +23,8 @@ bool player_create(Player * player)
 {
     assert(player != NULL);
     player->is_alive = true;
-    player->geometry.x = PLAYER_X;
-    player->geometry.y = PLAYER_Y;
+    player->geometry.x = PLAYER_START_X;
+    player->geometry.y = PLAYER_START_Y;
     player->geometry.width = PLAYER_WIDTH;
     player->geometry.height = PLAYER_HEIGHT;
     player->angle = 0;

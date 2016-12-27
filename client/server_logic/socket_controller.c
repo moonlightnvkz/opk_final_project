@@ -160,7 +160,7 @@ int sc_send_current_state(SocketController *sc, MVC *mvc)
     RequestStructure *peeked = ((RequestStructure *) deque_peek_last(&sc->requests_list));
     unsigned last_number;
     if (peeked == NULL) {
-        last_number = 1;
+        last_number = 0;
     } else {
         last_number = peeked->req_number;
     }

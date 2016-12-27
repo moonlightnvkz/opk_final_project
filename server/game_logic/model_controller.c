@@ -86,6 +86,14 @@ void mc_apply_request(ModelController *mc, unsigned number_of_player, RequestStr
     }
 }
 
+static int signum(double a) {
+    if (fabs(a) < 0.001) {
+        return 0;
+    } else {
+        return 2 * (a > 0) - 1; // returns 1 if a > 0 and -1 if a < 0
+    }
+}
+
 void mc_check_request_and_fix(ModelController *mc, unsigned number_of_player, RequestStructure *request)
 {
     Player *player = &mc->players[number_of_player];
@@ -102,15 +110,16 @@ void mc_check_request_and_fix(ModelController *mc, unsigned number_of_player, Re
     unsigned time_elapsed = SDL_GetTicks() - player->last_request_time;
     float shift_x = request->player_state.position.x - player->geometry.x;
     float shift_y = request->player_state.position.y - player->geometry.y;
-    if (shift_x / time_elapsed * 1000 > PLAYER_VELOCITY) {
+
+    if (fabs(shift_x) / time_elapsed * 1000 > PLAYER_VELOCITY) {
         request->player_state.position.x = request->player_state.position.x +
-                                           (float) time_elapsed / 1000 * PLAYER_VELOCITY;
+                                           time_elapsed / 1000.f * PLAYER_VELOCITY * signum(shift_x);
     }
-    if (shift_y / time_elapsed * 1000 > PLAYER_VELOCITY) {
+    if (fabs(shift_y) / time_elapsed * 1000 > PLAYER_VELOCITY) {
         request->player_state.position.y = request->player_state.position.y +
-                                           (float) time_elapsed / 1000 * PLAYER_VELOCITY;
+                                           time_elapsed / 1000.f * PLAYER_VELOCITY * signum(shift_y);
     }
-    if (request->critical_event.type == CE_SHOT_DONE && (SDL_GetTicks() - player->last_shot_time < (float) 1000 / PLAYER_FIRE_RATE)) {
+    if (request->critical_event.type == CE_SHOT_DONE && (SDL_GetTicks() - player->last_shot_time < 1000.0 / PLAYER_FIRE_RATE)) {
         LOG_ERROR("Too high firerate");
         request->critical_event.type = CE_NONE;
     }
